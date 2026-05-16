@@ -19,10 +19,29 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
 
 
-# -------- MongoDB --------
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'shadrasa_db')]
+
+
+import os
+from motor.motor_asyncio import AsyncIOMotorClient
+
+mongo_url = os.environ.get('MONGO_URL')
+db_name = os.environ.get('DB_NAME', 'shadrasa_db')
+
+client = None
+db = None
+
+if mongo_url:
+    try:
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[db_name]
+        print("✅ MongoDB connected")
+    except Exception as e:
+        print("❌ MongoDB connection failed:", e)
+else:
+    print("⚠️ MONGO_URL not found in environment")
+
+
+    
 
 # -------- App --------
 app = FastAPI(title="Shadrasa API")
