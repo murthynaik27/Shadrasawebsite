@@ -19,24 +19,28 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
 
-
 @app.on_event("startup")
 async def startup():
     if db is None:
         print("❌ Database not connected. Skipping startup tasks.")
         return
 
-    print("✅ Running startup...")
+    print("✅ Starting DB setup...")
 
     await db.users.create_index("email", unique=True)
     await db.users.create_index("id", unique=True)
+
     await db.products.create_index("id", unique=True)
+
     await db.categories.create_index("id", unique=True)
     await db.categories.create_index("slug", unique=True)
+
     await db.banners.create_index("id", unique=True)
     await db.content.create_index("id", unique=True)
+
     await db.contacts.create_index("created_at")
     await db.enquiries.create_index("created_at")
+
     await db.orders.create_index("id", unique=True)
     await db.orders.create_index("order_no", unique=True)
     await db.orders.create_index("created_at")
@@ -44,7 +48,8 @@ async def startup():
     await seed_admin()
     await seed_cms()
 
-    print("✅ Startup done")
+    print("✅ Startup complete")
+
 
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -69,7 +74,7 @@ else:
 
 
 # -------- App --------
-app = FastAPI(title="Shadrasa API")
+
 api_router = APIRouter(prefix="/api")
 admin_router = APIRouter(prefix="/api/admin")
 
