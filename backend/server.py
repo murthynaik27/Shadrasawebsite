@@ -40,34 +40,13 @@ if mongo_url:
         db = client[db_name]
         print("✅ MongoDB connected")
     except Exception as e:
-        print("❌ MongoDB connection failed:", e)
+        print("❌ MongoDB error:", e)
 else:
-    print("⚠️ MONGO_URL not found")
+    print("⚠️ MONGO_URL missing")
 
-# ---------------- STARTUP ----------------
-@app.on_event("startup")
-async def startup():
-    if db is None:
-        print("❌ DB not connected")
-        return
-
-    print("🚀 Running startup...")
-
-    await db.users.create_index("email", unique=True)
-    await db.users.create_index("id", unique=True)
-
-    await db.products.create_index("id", unique=True)
-    await db.categories.create_index("id", unique=True)
-
-    await db.orders.create_index("id", unique=True)
-    await db.orders.create_index("order_no", unique=True)
-
-    print("✅ Startup complete")
-
-# ---------------- BASIC ROUTE ----------------
-@app.get("/")
-async def root():
-    return {"message": "API Working 🚀"}
+# ---------------- ROUTERS ----------------
+api_router = APIRouter(prefix="/api")
+admin_router = APIRouter(prefix="/api/admin")
 
 # ---------------- AUTH ----------------
 JWT_ALGORITHM = "HS256"
@@ -89,6 +68,31 @@ def create_token(user_id, email):
     }
     return jwt.encode(payload, get_secret(), algorithm=JWT_ALGORITHM)
 
+# ---------------- STARTUP ----------------
+@app.on_event("startup")
+async def startup():
+    if db is None:
+        print("❌ DB not connected")
+        return
+
+    print("🚀 Startup running...")
+
+    await db.users.create_index("email", unique=True)
+    await db.users.create_index("id", unique=True)
+
+    await db.products.create_index("id", unique=True)
+    await db.categories.create_index("id", unique=True)
+
+    await db.orders.create_index("id", unique=True)
+    await db.orders.create_index("order_no", unique=True)
+
+    print("✅ Startup done")
+
+# ---------------- ROOT ----------------
+@app.get("/")
+async def root():
+    return {"message": "API Working 🚀"}
+
 # ---------------- LOGIN ----------------
 class Login(BaseModel):
     email: EmailStr
@@ -96,7 +100,11 @@ class Login(BaseModel):
 
 @app.post("/login")
 async def login(data: Login):
+    if db is None:
+        raise HTTPException(500, "DB not connected")
+
     user = await db.users.find_one({"email": data.email})
+
     if not user or not verify_password(data.password, user["password_hash"]):
         raise HTTPException(401, "Invalid login")
 
