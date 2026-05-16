@@ -7,3 +7,4 @@ bcrypt
 PyJWT
 resend
 email-validator
+certifi
