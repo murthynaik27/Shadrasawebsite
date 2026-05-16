@@ -14,7 +14,7 @@ from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 
 from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends
-app = FastAPI()
+app = FastAPI(title="Shadrasa API")
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
@@ -22,22 +22,29 @@ from pydantic import BaseModel, Field, EmailStr
 
 @app.on_event("startup")
 async def startup():
-    try:
-        if db is None:
-            print("❌ DB is None")
-            return
+    if db is None:
+        print("❌ Database not connected. Skipping startup tasks.")
+        return
 
-        print("✅ Starting DB setup...")
+    print("✅ Running startup...")
 
-        await db.users.create_index("email", unique=True)
+    await db.users.create_index("email", unique=True)
+    await db.users.create_index("id", unique=True)
+    await db.products.create_index("id", unique=True)
+    await db.categories.create_index("id", unique=True)
+    await db.categories.create_index("slug", unique=True)
+    await db.banners.create_index("id", unique=True)
+    await db.content.create_index("id", unique=True)
+    await db.contacts.create_index("created_at")
+    await db.enquiries.create_index("created_at")
+    await db.orders.create_index("id", unique=True)
+    await db.orders.create_index("order_no", unique=True)
+    await db.orders.create_index("created_at")
 
-        await seed_admin()
-        await seed_cms()
+    await seed_admin()
+    await seed_cms()
 
-        print("✅ Startup completed successfully")
-
-    except Exception as e:
-        print("🔥 STARTUP ERROR:", str(e))
+    print("✅ Startup done")
 
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -824,7 +831,6 @@ async def startup():
         return
 
     await db.users.create_index("email", unique=True)
-    await db.users.create_index("id", unique=True)
     await db.products.create_index("id", unique=True)
     await db.categories.create_index("id", unique=True)
     await db.categories.create_index("slug", unique=True)
