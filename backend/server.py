@@ -835,8 +835,8 @@ async def startup():
     await db.orders.create_index("order_no", unique=True)
     await db.orders.create_index("created_at")
 
-    await seed_admin()
-    await seed_cms()
+    #await seed_admin()
+    #await seed_cms()
     await db.users.create_index("id", unique=True)
     await db.products.create_index("id", unique=True)
     await db.categories.create_index("id", unique=True)
