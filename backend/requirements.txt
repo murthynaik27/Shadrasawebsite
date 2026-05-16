@@ -1,8 +1,9 @@
 fastapi
 uvicorn
+motor
 pymongo
 python-dotenv
-passlib[bcrypt]
-python-jose
-python-multipart
+bcrypt
+PyJWT
+resend
 email-validator
