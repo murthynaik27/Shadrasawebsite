@@ -19,7 +19,24 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
 
 
+@app.on_event("startup")
+async def startup():
+    try:
+        if db is None:
+            print("❌ DB is None")
+            return
 
+        print("✅ Starting DB setup...")
+
+        await db.users.create_index("email", unique=True)
+
+        await seed_admin()
+        await seed_cms()
+
+        print("✅ Startup completed successfully")
+
+    except Exception as e:
+        print("🔥 STARTUP ERROR:", str(e))
 
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -75,10 +92,8 @@ async def send_notification_email(subject: str, html_content: str) -> bool:
 # -------- Auth helpers --------
 JWT_ALGORITHM = "HS256"
 
-
 def get_jwt_secret() -> str:
-    return os.environ["JWT_SECRET"]
-
+    return os.environ.get("JWT_SECRET", "fallback_secret")
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
