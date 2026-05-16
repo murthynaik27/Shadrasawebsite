@@ -1,0 +1,44 @@
+{
+  "summary": "Phase 2 Shadrasa CMS — full backend + frontend regression. 30/30 pytest backend tests pass (auth, contact/enquiry, site/* public, admin dashboard, Categories/Products/Banners CRUD, Content GET/PUT partial-update, enquiry/contact status update, validation 422 on missing fields, _id leak checks). Frontend e2e: homepage renders dynamic content from /api/site/content (hero 'Welcome to Shadrasa', products, contact info), admin login redirects to dashboard with stat cards (2 products, 2 categories, 4 banners, 5 enquiries, 4 contacts, 9 total leads), Add Product modal creates product that appears on public homepage, sidebar nav routes to /admin/categories, /admin/banners, /admin/content, /admin/dashboard work, Story/Content editor loads all sections, Logout clears session and redirects to /admin/login. Seeding is idempotent (admin user upserted on restart with new password; categories/products/banners only inserted if collection empty or by slug/name check).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "PUT /api/admin/categories/{id}", "issue": "Filters out keys whose value is None, so unsetting fields (e.g., setting description back to null) is not possible. Minor — same payload pattern as Pydantic Optional, acceptable for now."},
+      {"endpoint": "PUT /api/admin/banners/{id}", "issue": "Uses data.model_dump() (no exclude_none), so fields explicitly null in payload will overwrite stored values. Inconsistent with categories/content behavior — consider standardising."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Public homepage (all banner images)", "issues": ["Console warning: 'An empty string (\"\") was passed to the src attribute' — likely an <img src=\"\"> rendered when banner.image is empty or while loading. Not a functional issue, just noise — guard with `image ? <img src=...> : null` in Banners slider component."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_cms.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Optional: guard <img> src against empty string in Banner/Hero slider to silence console warning.",
+    "Optional: standardise PUT update payload handling (banners vs categories vs content) — currently banners overwrites with full dump while others use partial."
+  ],
+  "critical_code_review_comments": [
+    "server.py: seed_admin() correctly updates admin password if changed in env — good idempotency.",
+    "All /api/site/* and /api/admin/* endpoints exclude _id via projection {'_id': 0} — verified no leak in 30 test cases.",
+    "JWT auth supports both httpOnly cookie and Bearer header — admin frontend uses Bearer from localStorage, consistent.",
+    "Resend email gracefully no-ops when RESEND_API_KEY empty — verified via test_create_contact assertion email_sent=False.",
+    "Pydantic ContentIn uses all-Optional fields enabling true partial updates via update_one $set — verified preserves other fields.",
+    "No business-logic bugs found. All CRUD endpoints return appropriate 200/201/401/404/422 status codes."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_cms.py (new — 17 CMS endpoint tests)"
+  ],
+  "success_rate": {"backend": "100% (30/30)", "frontend": "100% (all critical flows)"},
+  "test_credentials": "admin@shadrasa.com / Shadrasa@2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created and cleaned up TEST_UI_Product via admin panel during e2e flow. Created/deleted multiple TEST_ prefixed categories/products/banners in pytest CRUD tests (auto-cleanup). Created TEST_C contact and TEST_E enquiry for status update tests (left in DB — prefixed for easy identification).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend has 30 pytest tests across backend_test.py (auth/contact/enquiry/admin basics) and test_cms.py (full CMS CRUD + site/* + content partial-update + status updates + _id leak + 422 validation). Both files use REACT_APP_BACKEND_URL with fallback default. Run via: pytest /app/backend/tests/ -v. Admin token obtained via POST /api/auth/login with admin@shadrasa.com / Shadrasa@2026 → use as Bearer header. Frontend admin routes mounted under AdminLayout outlet at /admin/dashboard|products|categories|banners|content|enquiries|contacts. All interactive elements have data-testid (e.g., add-product-btn, pf-name, pf-description, pf-price, pf-stock, nav-products, nav-story-content, admin-logout). Resend email is intentionally disabled (key empty) and returns email_sent=False — not a bug.",
+  "rca of the issue": "No critical issues found. Minor console warning on public homepage about empty img src — likely from banner slider rendering an <img> before image data loads or when a banner has no image; non-blocking, fix is a conditional render guard in the banner component."
+}

@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --shadrasa-green: #0f4d2e;
+  --shadrasa-green-deep: #0a331e;
+  --shadrasa-gold: #d4a017;
+  --shadrasa-gold-deep: #b88a14;
+  --shadrasa-brown: #6b3e1f;
+  --shadrasa-cream: #fdfbf7;
+  --shadrasa-text: #4a453f;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  background: var(--shadrasa-cream);
+  color: var(--shadrasa-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-body {
+  font-family: 'Manrope', sans-serif;
+}
+
+::selection {
+  background: var(--shadrasa-gold);
+  color: #fff;
+}
+
+@layer base {
+  :root {
+    --background: 40 50% 98%;
+    --foreground: 150 60% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 60% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 60% 12%;
+    --primary: 150 67% 18%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 80% 46%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 40 30% 94%;
+    --muted-foreground: 30 15% 35%;
+    --accent: 30 55% 27%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 30% 88%;
+    --input: 30 30% 90%;
+    --ring: 150 67% 18%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom utility classes */
+.text-shadrasa-green { color: var(--shadrasa-green); }
+.text-shadrasa-gold { color: var(--shadrasa-gold); }
+.text-shadrasa-brown { color: var(--shadrasa-brown); }
+.bg-shadrasa-green { background-color: var(--shadrasa-green); }
+.bg-shadrasa-gold { background-color: var(--shadrasa-gold); }
+.bg-shadrasa-brown { background-color: var(--shadrasa-brown); }
+.bg-shadrasa-cream { background-color: var(--shadrasa-cream); }
+.border-shadrasa-green { border-color: var(--shadrasa-green); }
+.border-shadrasa-gold { border-color: var(--shadrasa-gold); }
+
+/* Hero gradient overlay */
+.hero-overlay {
+  background: linear-gradient(180deg, rgba(10, 51, 30, 0.55) 0%, rgba(10, 51, 30, 0.35) 50%, rgba(10, 51, 30, 0.75) 100%);
+}
+
+/* Decorative leaf divider */
+.divider-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--shadrasa-gold);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+}
+.divider-ornament::before,
+.divider-ornament::after {
+  content: "";
+  height: 1px;
+  width: 60px;
+  background: linear-gradient(90deg, transparent, var(--shadrasa-gold), transparent);
+}
+
+/* Premium button effect */
+.btn-glow:hover {
+  box-shadow: 0 12px 30px -10px rgba(212, 160, 23, 0.55);
+}
+
+/* Animated scroll indicator */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+.scroll-indicator {
+  animation: scrollBounce 1.8s ease-in-out infinite;
+}
+
+/* Floating subtle animation */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.float-y { animation: floatY 4s ease-in-out infinite; }
+
+/* Loading spinner */
+@keyframes pulseLogo {
+  0%, 100% { opacity: 0.5; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.pulse-logo { animation: pulseLogo 1.4s ease-in-out infinite; }
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Grain overlay */
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
