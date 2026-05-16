@@ -50,10 +50,10 @@ async def startup():
 
     print("✅ Startup complete")
 
-
-import os
+import certifi
 from motor.motor_asyncio import AsyncIOMotorClient
 
+client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
 mongo_url = os.environ.get('MONGO_URL')
 db_name = os.environ.get('DB_NAME', 'shadrasa_db')
 
