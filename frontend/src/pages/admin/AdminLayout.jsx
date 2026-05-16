@@ -96,14 +96,14 @@ export default function AdminLayout() {
           ))}
         </nav>
         <div className="p-4 border-t border-[#6b3e1f]/10 space-y-2">
-          <a
-            href="/"
+          <Link
+            to="/"
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-[#6b3e1f] hover:bg-[#fdfbf7] text-sm font-medium"
           >
             <Globe size={14} /> View website
-          </a>
+          </Link>
           <button
             onClick={logout}
             data-testid="admin-logout"

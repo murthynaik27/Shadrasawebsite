@@ -1,5 +1,6 @@
 import { Facebook, Instagram, Youtube, Twitter } from "lucide-react";
 import { LOGO_URL } from "../lib/api";
+import { Link } from "react-router-dom";
 
 export default function Footer({ content = {} }) {
   const year = new Date().getFullYear();
@@ -55,7 +56,7 @@ export default function Footer({ content = {} }) {
               <li><a href={`mailto:${EMAIL}`} className="hover:text-[#d4a017] break-all">{EMAIL}</a></li>
               <li>{ADDR}</li>
               <li className="pt-3">
-                <a href="/admin/login" data-testid="footer-admin-link" className="text-white/40 hover:text-[#d4a017] text-xs uppercase tracking-[0.2em]">Admin Portal</a>
+                <Link to="/admin/login" data-testid="footer-admin-link" className="text-white/40 hover:text-[#d4a017] text-xs uppercase tracking-[0.2em]">Admin Portal</Link>
               </li>
             </ul>
           </div>
