@@ -41,7 +41,7 @@ else:
     print("⚠️ MONGO_URL not found in environment")
 
 
-    
+
 
 # -------- App --------
 app = FastAPI(title="Shadrasa API")
@@ -801,11 +801,27 @@ async def seed_cms():
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
             await db.banners.insert_one(doc.copy())
-
-
 @app.on_event("startup")
 async def startup():
+    if db is None:
+        print("❌ Database not connected. Skipping startup tasks.")
+        return
+
     await db.users.create_index("email", unique=True)
+    await db.users.create_index("id", unique=True)
+    await db.products.create_index("id", unique=True)
+    await db.categories.create_index("id", unique=True)
+    await db.categories.create_index("slug", unique=True)
+    await db.banners.create_index("id", unique=True)
+    await db.content.create_index("id", unique=True)
+    await db.contacts.create_index("created_at")
+    await db.enquiries.create_index("created_at")
+    await db.orders.create_index("id", unique=True)
+    await db.orders.create_index("order_no", unique=True)
+    await db.orders.create_index("created_at")
+
+    await seed_admin()
+    await seed_cms()
     await db.users.create_index("id", unique=True)
     await db.products.create_index("id", unique=True)
     await db.categories.create_index("id", unique=True)
