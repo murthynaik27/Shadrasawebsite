@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = "https://shadrasawebsite.onrender.com";
 export const API = `${BACKEND_URL}/api`;
 
 export const apiClient = axios.create({

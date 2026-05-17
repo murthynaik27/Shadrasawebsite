@@ -43,7 +43,7 @@ export default function AdminOverview() {
         <StatCard label="Enquiries" value={stats?.enquiries ?? "—"} icon={MessageSquareText} color="#0a331e" to="/admin/enquiries" />
         <StatCard label="Contacts" value={stats?.contacts ?? "—"} icon={Inbox} color="#0f4d2e" to="/admin/contacts" />
         <StatCard label="Total Leads" value={(stats?.contacts ?? 0) + (stats?.enquiries ?? 0)} icon={TrendingUp} color="#0f4d2e" />
-        <StatCard label="View Site" value="→" icon={Globe} color="#6b3e1f" link="/" />
+        <StatCard label="View Site" value="→" icon={Globe} color="#6b3e1f" to="/" target="_blank" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -54,7 +54,7 @@ export default function AdminOverview() {
   );
 }
 
-function StatCard({ label, value, icon: Icon, color, to, link }) {
+function StatCard({ label, value, icon: Icon, color, to, link, target }) {
   const body = (
     <div className="rounded-2xl bg-white p-5 border border-[#6b3e1f]/10 hover:border-[#d4a017]/40 transition-colors h-full">
       <div className="flex items-center justify-between mb-3">
@@ -66,7 +66,7 @@ function StatCard({ label, value, icon: Icon, color, to, link }) {
       <p className="font-display text-2xl md:text-3xl font-bold text-[#0a331e] break-words">{value}</p>
     </div>
   );
-  if (to) return <Link to={to}>{body}</Link>;
+  if (to) return <Link to={to} target={target}>{body}</Link>;
   if (link) return <a href={link} target="_blank" rel="noreferrer">{body}</a>;
   return body;
 }

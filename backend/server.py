@@ -67,7 +67,7 @@ JWT_ALGORITHM = "HS256"
 
 
 def get_jwt_secret() -> str:
-    return os.environ["JWT_SECRET"]
+    return os.environ.get("JWT_SECRET", "default_secret_key_change_me")
 
 
 def hash_password(password: str) -> str:
