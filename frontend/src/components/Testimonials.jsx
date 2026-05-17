@@ -172,7 +172,6 @@ export default function Testimonials({ reviews = [] }) {
           </motion.div>
         )}
       </AnimatePresence>
-      </div>
     </section>
   );
 }
