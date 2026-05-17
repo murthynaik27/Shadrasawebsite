@@ -25,7 +25,7 @@ export default function HomePage() {
         <About content={site.content} />
         <WhyUs />
         <Products products={site.products} />
-        <Gallery />
+        <Gallery gallery={site.gallery} />
         <HeritageVideo content={site.content} />
         <TrustCounters content={site.content} />
         <BusinessCTA content={site.content} />

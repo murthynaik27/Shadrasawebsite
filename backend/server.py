@@ -167,6 +167,15 @@ class BannerIn(BaseModel):
     sort_order: int = 0
 
 
+class GalleryIn(BaseModel):
+    title: Optional[str] = None
+    type: str = Field(..., max_length=20)  # "image" or "video"
+    url: str
+    category: Optional[str] = None
+    is_active: bool = True
+    sort_order: int = 0
+
+
 class StatusUpdate(BaseModel):
     status: str = Field(..., max_length=40)
 
@@ -426,6 +435,12 @@ async def site_banners():
     return items
 
 
+@api_router.get("/site/gallery")
+async def site_gallery():
+    items = await db.gallery.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).to_list(200)
+    return items
+
+
 # -------- Admin CMS Routes --------
 @admin_router.get("/dashboard")
 async def dashboard(user: dict = Depends(get_current_user)):
@@ -625,6 +640,40 @@ async def delete_banner(bid: str, user: dict = Depends(get_current_user)):
     return {"ok": True}
 
 
+# ---- Gallery ----
+@admin_router.get("/gallery")
+async def list_gallery(user: dict = Depends(get_current_user)):
+    return await db.gallery.find({}, {"_id": 0}).sort("sort_order", 1).to_list(200)
+
+
+@admin_router.post("/gallery", status_code=201)
+async def create_gallery(data: GalleryIn, user: dict = Depends(get_current_user)):
+    doc = {
+        "id": str(uuid.uuid4()),
+        **data.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.gallery.insert_one(doc.copy())
+    doc.pop("_id", None)
+    return doc
+
+
+@admin_router.put("/gallery/{gid}")
+async def update_gallery(gid: str, data: GalleryIn, user: dict = Depends(get_current_user)):
+    res = await db.gallery.update_one({"id": gid}, {"$set": data.model_dump()})
+    if res.matched_count == 0:
+        raise HTTPException(404, "Gallery item not found")
+    return await db.gallery.find_one({"id": gid}, {"_id": 0})
+
+
+@admin_router.delete("/gallery/{gid}")
+async def delete_gallery(gid: str, user: dict = Depends(get_current_user)):
+    res = await db.gallery.delete_one({"id": gid})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Gallery item not found")
+    return {"ok": True}
+
+
 # ---- Content ----
 @admin_router.get("/content")
 async def get_content(user: dict = Depends(get_current_user)):
@@ -713,6 +762,15 @@ DEFAULT_BANNERS = [
     {"image": "https://static.prod-images.emergentagent.com/jobs/cc798c37-0d6b-4dd4-bae2-7f1634f5fc87/images/31a9bf84392f042b3f2a3f227f2e1dc646946f3e87f197b0643d501b21dfef8f.png", "sort_order": 4, "is_active": True},
 ]
 
+DEFAULT_GALLERY = [
+    {"type": "image", "url": "https://static.prod-images.emergentagent.com/jobs/cc798c37-0d6b-4dd4-bae2-7f1634f5fc87/images/e84680ac840e149faf37cdbefef32eccba214d2ee0eb9299994073cb34aba1f2.png", "title": "Banana leaf traditional spread", "category": "Food", "sort_order": 1, "is_active": True},
+    {"type": "image", "url": "https://images.pexels.com/photos/31280796/pexels-photo-31280796.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "title": "Honey collection", "category": "Farm", "sort_order": 2, "is_active": True},
+    {"type": "image", "url": "https://images.pexels.com/photos/12299536/pexels-photo-12299536.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "title": "Spice market", "category": "Ingredients", "sort_order": 3, "is_active": True},
+    {"type": "image", "url": "https://images.pexels.com/photos/16300779/pexels-photo-16300779.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "title": "Misty hills", "category": "Origin", "sort_order": 4, "is_active": True},
+    {"type": "image", "url": "https://images.pexels.com/photos/7812134/pexels-photo-7812134.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "title": "Pickle jars", "category": "Products", "sort_order": 5, "is_active": True},
+    {"type": "image", "url": "https://images.pexels.com/photos/8500508/pexels-photo-8500508.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "title": "Honey jar", "category": "Products", "sort_order": 6, "is_active": True},
+]
+
 
 async def seed_admin():
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@shadrasa.com").lower()
@@ -791,6 +849,21 @@ async def seed_cms():
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
             await db.banners.insert_one(doc.copy())
+
+    # Gallery
+    if await db.gallery.count_documents({}) == 0:
+        for g in DEFAULT_GALLERY:
+            doc = {
+                "id": str(uuid.uuid4()),
+                "title": g["title"],
+                "type": g["type"],
+                "url": g["url"],
+                "category": g["category"],
+                "is_active": g.get("is_active", True),
+                "sort_order": g.get("sort_order", 0),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.gallery.insert_one(doc.copy())
 
 
 @app.on_event("startup")

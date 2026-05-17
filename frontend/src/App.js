@@ -9,6 +9,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminCategories from "./pages/admin/AdminCategories";
+import AdminGallery from "./pages/admin/AdminGallery";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
@@ -34,6 +35,7 @@ function App() {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
+            <Route path="gallery" element={<AdminGallery />} />
             <Route path="banners" element={<AdminBanners />} />
             <Route path="content" element={<AdminContent />} />
             <Route path="enquiries" element={<AdminEnquiries />} />
