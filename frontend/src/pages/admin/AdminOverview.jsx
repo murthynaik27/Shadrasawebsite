@@ -43,7 +43,7 @@ export default function AdminOverview() {
         <StatCard label="Enquiries" value={stats?.enquiries ?? "—"} icon={MessageSquareText} color="#0a331e" to="/admin/enquiries" />
         <StatCard label="Contacts" value={stats?.contacts ?? "—"} icon={Inbox} color="#0f4d2e" to="/admin/contacts" />
         <StatCard label="Total Leads" value={(stats?.contacts ?? 0) + (stats?.enquiries ?? 0)} icon={TrendingUp} color="#0f4d2e" />
-        <StatCard label="View Site" value="→" icon={Globe} color="#6b3e1f" to="/" target="_blank" />
+        <StatCard label="View Site" value="→" icon={Globe} color="#6b3e1f" link={process.env.PUBLIC_URL || "/Shadrasawebsite"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
