@@ -150,6 +150,8 @@ class ProductIn(BaseModel):
     sale_price: Optional[float] = None
     currency: str = "INR"
     stock: int = 0
+    weight: Optional[float] = None
+    unit: Optional[str] = None
     image: Optional[str] = None  # base64 data URL
     is_featured: bool = False
     is_active: bool = True
@@ -793,6 +795,8 @@ DEFAULT_PRODUCTS = [
         "category_slug": "pickles",
         "price": 349,
         "stock": 50,
+        "weight": 500,
+        "unit": "g",
         "image": "https://images.pexels.com/photos/7812134/pexels-photo-7812134.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=900",
         "premium_badge": "Premium Batch",
         "is_featured": True,

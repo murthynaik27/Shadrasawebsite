@@ -93,6 +93,9 @@ export default function Products({ products = [] }) {
                       ) : (
                         <span className="font-display text-2xl font-semibold text-[#0a331e]">{formatPrice(p.price, p.currency)}</span>
                       )}
+                      {p.weight && p.unit && (
+                        <span className="text-sm font-semibold text-[#6b3e1f] ml-1">/ {p.weight}{p.unit}</span>
+                      )}
                     </div>
                     {p.stock > 0 && (
                       <span className="text-xs text-[#0f4d2e] font-semibold flex items-center gap-1">

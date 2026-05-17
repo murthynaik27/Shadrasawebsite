@@ -44,6 +44,8 @@ export function CartProvider({ children }) {
           price: Number(price) || 0,
           quantity: qty,
           stock: product.stock,
+          weight: product.weight,
+          unit: product.unit,
         },
       ];
     });

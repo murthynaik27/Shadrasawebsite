@@ -49,7 +49,10 @@ export default function CartDrawer() {
                   <img src={i.image} alt={i.name} className="h-20 w-20 rounded-xl object-cover" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-[#0a331e] text-sm line-clamp-2">{i.name}</p>
-                    <p className="text-[#0f4d2e] font-semibold text-sm mt-1">{formatPrice(i.price)}</p>
+                    <p className="text-[#0f4d2e] font-semibold text-sm mt-1">
+                      {formatPrice(i.price)}
+                      {i.weight && i.unit && <span className="text-xs text-[#6b3e1f] ml-1">/ {i.weight}{i.unit}</span>}
+                    </p>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center bg-[#fdfbf7] rounded-full border border-[#6b3e1f]/15">
                         <button onClick={() => setQty(i.product_id, i.quantity - 1)} data-testid={`qty-dec-${i.product_id}`} className="h-7 w-7 flex items-center justify-center text-[#0a331e] hover:bg-[#0f4d2e] hover:text-white rounded-l-full">

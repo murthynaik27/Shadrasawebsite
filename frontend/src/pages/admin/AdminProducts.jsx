@@ -7,7 +7,7 @@ import ImageInput, { FormShell, Label, TextInput, TextArea, EmptyState } from ".
 
 const EMPTY = {
   name: "", tagline: "", description: "", category_id: "", price: 0, sale_price: null,
-  currency: "INR", stock: 0, image: "", premium_badge: "Premium Batch",
+  currency: "INR", stock: 0, weight: "", unit: "g", image: "", premium_badge: "Premium Batch",
   is_featured: false, is_active: true, sort_order: 0,
 };
 
@@ -31,7 +31,7 @@ export default function AdminProducts() {
   const startNew = () => { setEditing("new"); setForm(EMPTY); };
   const startEdit = (p) => {
     setEditing(p.id);
-    setForm({ ...EMPTY, ...p, sale_price: p.sale_price ?? null });
+    setForm({ ...EMPTY, ...p, sale_price: p.sale_price ?? null, weight: p.weight ?? "", unit: p.unit ?? "g" });
   };
   const close = () => { setEditing(null); setForm(EMPTY); };
 
@@ -44,6 +44,7 @@ export default function AdminProducts() {
         price: Number(form.price) || 0,
         sale_price: form.sale_price ? Number(form.sale_price) : null,
         stock: Number(form.stock) || 0,
+        weight: form.weight ? Number(form.weight) : null,
         sort_order: Number(form.sort_order) || 0,
       };
       if (editing === "new") {
@@ -115,7 +116,10 @@ export default function AdminProducts() {
                 <p className="text-xs text-[#6b3e1f] mb-2">{p.category_name || "—"}</p>
                 <p className="text-sm text-[#4a453f] line-clamp-2 flex-1">{p.description}</p>
                 <div className="mt-3 flex items-center justify-between">
-                  <p className="font-semibold text-[#0f4d2e]">{formatPrice(p.price, p.currency)}</p>
+                  <p className="font-semibold text-[#0f4d2e]">
+                    {formatPrice(p.price, p.currency)}
+                    {p.weight && p.unit && ` / ${p.weight}${p.unit}`}
+                  </p>
                   <p className="text-xs text-[#6b3e1f]">Stock: {p.stock}</p>
                 </div>
                 <div className="mt-3 flex gap-2">
@@ -171,6 +175,21 @@ export default function AdminProducts() {
             <label className="block">
               <Label>Stock *</Label>
               <TextInput type="number" min="0" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} data-testid="pf-stock" />
+            </label>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="block">
+              <Label>Weight</Label>
+              <TextInput type="number" min="0" step="any" value={form.weight ?? ""} onChange={(e) => setForm({ ...form, weight: e.target.value })} placeholder="e.g. 500" />
+            </label>
+            <label className="block">
+              <Label>Unit</Label>
+              <select value={form.unit || "g"} onChange={(e) => setForm({ ...form, unit: e.target.value })} className="w-full rounded-xl border border-[#6b3e1f]/20 px-4 py-2.5 text-sm bg-[#fdfbf7]">
+                <option value="g">Gram (g)</option>
+                <option value="kg">Kilogram (kg)</option>
+                <option value="ml">Milliliter (ml)</option>
+                <option value="L">Liter (L)</option>
+              </select>
             </label>
           </div>
           <ImageInput value={form.image} onChange={(v) => setForm({ ...form, image: v })} label="Product Image" />

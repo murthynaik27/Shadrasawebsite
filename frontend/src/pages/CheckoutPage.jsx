@@ -184,7 +184,10 @@ export default function CheckoutPage() {
                     <li key={i.product_id} className="flex gap-3 items-center">
                       <img src={i.image} alt={i.name} className="h-14 w-14 rounded-lg object-cover" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#0a331e] line-clamp-1">{i.name}</p>
+                        <p className="text-sm font-semibold text-[#0a331e] line-clamp-1">
+                          {i.name}
+                          {i.weight && i.unit && <span className="text-xs text-[#6b3e1f] font-normal ml-1">({i.weight}{i.unit})</span>}
+                        </p>
                         <p className="text-xs text-[#6b3e1f]">Qty: {i.quantity}</p>
                       </div>
                       <p className="text-sm font-semibold text-[#0a331e]">{formatPrice(i.price * i.quantity)}</p>
