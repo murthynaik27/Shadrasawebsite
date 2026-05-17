@@ -29,7 +29,7 @@ export default function HomePage() {
         <HeritageVideo content={site.content} />
         <TrustCounters content={site.content} />
         <BusinessCTA content={site.content} />
-        <Testimonials />
+        <Testimonials reviews={site.reviews} />
         <Contact content={site.content} />
       </main>
       <Footer content={site.content} />
