@@ -163,7 +163,7 @@ export default function AdminProducts() {
               <TextInput value={form.premium_badge || ""} onChange={(e) => setForm({ ...form, premium_badge: e.target.value })} placeholder="e.g. Premium Batch" />
             </label>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
             <label className="block">
               <Label>Price (₹) *</Label>
               <TextInput type="number" min="0" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} data-testid="pf-price" />
@@ -176,8 +176,6 @@ export default function AdminProducts() {
               <Label>Stock *</Label>
               <TextInput type="number" min="0" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} data-testid="pf-stock" />
             </label>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="block">
               <Label>Weight</Label>
               <TextInput type="number" min="0" step="any" value={form.weight ?? ""} onChange={(e) => setForm({ ...form, weight: e.target.value })} placeholder="e.g. 500" />
