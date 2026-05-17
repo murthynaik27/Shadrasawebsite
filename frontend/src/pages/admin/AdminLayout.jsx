@@ -15,6 +15,7 @@ import {
   Globe,
   Image as ImageIconNav,
   Star,
+  X,
 } from "lucide-react";
 import { LOGO_URL, apiClient } from "../../lib/api";
 import { authHeaders } from "../../lib/admin";
