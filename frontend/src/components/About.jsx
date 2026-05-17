@@ -7,7 +7,7 @@ export default function About({ content = {} }) {
   const heading = content.about_heading || "About Shadrasa";
   const parts = heading.split(" ");
   return (
-    <section id="about" data-testid="about-section" className="py-24 md:py-32 bg-[#fdfbf7] relative overflow-hidden">
+    <section id="about" data-testid="about-section" className="pt-12 md:pt-16 pb-16 md:pb-24 bg-[#fdfbf7] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <motion.div

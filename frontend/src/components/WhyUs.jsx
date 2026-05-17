@@ -23,7 +23,7 @@ const items = [
 
 export default function WhyUs() {
   return (
-    <section id="why-us" data-testid="why-us-section" className="py-24 md:py-32 bg-white relative">
+    <section id="why-us" data-testid="why-us-section" className="py-16 md:py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

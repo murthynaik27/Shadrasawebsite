@@ -22,9 +22,9 @@ export default function HomePage() {
       <Navbar />
       <main>
         <Hero content={site.content} banners={site.banners} />
+        <Products products={site.products} />
         <About content={site.content} />
         <WhyUs />
-        <Products products={site.products} />
         <Gallery gallery={site.gallery} />
         <HeritageVideo content={site.content} />
         <TrustCounters content={site.content} />

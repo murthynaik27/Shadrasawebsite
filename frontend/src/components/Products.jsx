@@ -26,7 +26,7 @@ export default function Products({ products = [] }) {
   };
 
   return (
-    <section id="products" data-testid="products-section" className="py-24 md:py-32 bg-[#fdfbf7] relative">
+    <section id="products" data-testid="products-section" className="pt-24 md:pt-32 pb-12 md:pb-16 bg-[#fdfbf7] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
