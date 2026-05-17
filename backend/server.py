@@ -225,6 +225,8 @@ class ContentIn(BaseModel):
     heritage_body: Optional[str] = None
     heritage_image: Optional[str] = None
     heritage_button_label: Optional[str] = None
+    heritage_video_url: Optional[str] = None
+    heritage_is_active: Optional[bool] = True
     # Trust counters
     stat_customers: Optional[int] = None
     stat_quality: Optional[int] = None

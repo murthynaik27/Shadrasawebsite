@@ -30,12 +30,14 @@ const SECTIONS = [
     ],
   },
   {
-    title: "Heritage / Video Section",
+    title: "Brand Story / Video Section",
     fields: [
+      { key: "heritage_is_active", label: "Show this section on website", type: "checkbox" },
       { key: "heritage_eyebrow", label: "Eyebrow text", type: "text" },
       { key: "heritage_heading", label: "Heading", type: "text" },
       { key: "heritage_body", label: "Body text", type: "textarea" },
       { key: "heritage_image", label: "Background image", type: "image" },
+      { key: "heritage_video_url", label: "Brand story video URL (mp4 or YouTube link)", type: "text" },
       { key: "heritage_button_label", label: "Play button label", type: "text" },
     ],
   },
@@ -117,6 +119,11 @@ export default function AdminContent() {
                 <div key={f.key}>
                   {f.type === "image" ? (
                     <ImageInput value={content[f.key] || ""} onChange={(v) => update(f.key, v)} label={f.label} />
+                  ) : f.type === "checkbox" ? (
+                    <label className="flex items-center gap-2 text-sm font-semibold text-[#0a331e] cursor-pointer pt-2">
+                      <input type="checkbox" checked={content[f.key] ?? true} onChange={(e) => update(f.key, e.target.checked)} className="h-4 w-4 accent-[#0f4d2e]" />
+                      {f.label}
+                    </label>
                   ) : (
                     <label className="block">
                       <Label>{f.label}</Label>
