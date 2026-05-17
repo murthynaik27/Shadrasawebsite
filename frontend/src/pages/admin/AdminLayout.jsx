@@ -12,9 +12,9 @@ import {
   MessageSquareText,
   LogOut,
   Menu,
-  X,
   Globe,
   Image as ImageIconNav,
+  Star,
 } from "lucide-react";
 import { LOGO_URL, apiClient } from "../../lib/api";
 import { authHeaders } from "../../lib/admin";
@@ -25,6 +25,7 @@ const nav = [
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/categories", label: "Categories", icon: Tags },
   { to: "/admin/gallery", label: "Gallery", icon: ImageIconNav },
+  { to: "/admin/reviews", label: "Reviews", icon: Star },
   { to: "/admin/banners", label: "Banners", icon: ImageIcon },
   { to: "/admin/content", label: "Story / Content", icon: FileText },
   { to: "/admin/enquiries", label: "Enquiries", icon: MessageSquareText },

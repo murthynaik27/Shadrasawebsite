@@ -7,6 +7,7 @@ export function useSiteData() {
   const [banners, setBanners] = useState([]);
   const [categories, setCategories] = useState([]);
   const [gallery, setGallery] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,14 +18,16 @@ export function useSiteData() {
       apiClient.get("/site/banners"),
       apiClient.get("/site/categories"),
       apiClient.get("/site/gallery"),
+      apiClient.get("/site/reviews"),
     ])
-      .then(([c, p, b, cat, g]) => {
+      .then(([c, p, b, cat, g, r]) => {
         if (!mounted) return;
         setContent(c.data || {});
         setProducts(p.data || []);
         setBanners(b.data || []);
         setCategories(cat.data || []);
         setGallery(g.data || []);
+        setReviews(r.data || []);
       })
       .catch((err) => console.error("site data load failed", err))
       .finally(() => mounted && setLoading(false));
@@ -33,7 +36,7 @@ export function useSiteData() {
     };
   }, []);
 
-  return { content, products, banners, categories, gallery, loading };
+  return { content, products, banners, categories, gallery, reviews, loading };
 }
 
 export function buildWhatsappFromNumber(num, msg) {

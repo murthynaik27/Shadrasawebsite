@@ -176,6 +176,16 @@ class GalleryIn(BaseModel):
     sort_order: int = 0
 
 
+class ReviewIn(BaseModel):
+    name: str = Field(..., max_length=100)
+    location: Optional[str] = None
+    rating: int = Field(..., ge=1, le=5)
+    text: str = Field(..., max_length=1000)
+    image: Optional[str] = None
+    status: str = "pending" # pending, approved, featured, rejected
+    is_verified_purchase: bool = False
+
+
 class StatusUpdate(BaseModel):
     status: str = Field(..., max_length=40)
 
@@ -443,6 +453,29 @@ async def site_gallery():
     return items
 
 
+@api_router.get("/site/reviews")
+async def site_reviews():
+    # Only return approved or featured reviews
+    items = await db.reviews.find(
+        {"status": {"$in": ["approved", "featured"]}}, 
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return items
+
+
+@api_router.post("/reviews", status_code=201)
+async def submit_review(data: ReviewIn):
+    doc = {
+        "id": str(uuid.uuid4()),
+        **data.model_dump(),
+        "status": "pending", # Force pending on submission
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.reviews.insert_one(doc.copy())
+    doc.pop("_id", None)
+    return doc
+
+
 # -------- Admin CMS Routes --------
 @admin_router.get("/dashboard")
 async def dashboard(user: dict = Depends(get_current_user)):
@@ -676,6 +709,28 @@ async def delete_gallery(gid: str, user: dict = Depends(get_current_user)):
     return {"ok": True}
 
 
+# ---- Reviews ----
+@admin_router.get("/reviews")
+async def list_reviews(user: dict = Depends(get_current_user)):
+    return await db.reviews.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+
+
+@admin_router.put("/reviews/{rid}")
+async def update_review(rid: str, data: ReviewIn, user: dict = Depends(get_current_user)):
+    res = await db.reviews.update_one({"id": rid}, {"$set": data.model_dump()})
+    if res.matched_count == 0:
+        raise HTTPException(404, "Review not found")
+    return await db.reviews.find_one({"id": rid}, {"_id": 0})
+
+
+@admin_router.delete("/reviews/{rid}")
+async def delete_review(rid: str, user: dict = Depends(get_current_user)):
+    res = await db.reviews.delete_one({"id": rid})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Review not found")
+    return {"ok": True}
+
+
 # ---- Content ----
 @admin_router.get("/content")
 async def get_content(user: dict = Depends(get_current_user)):
@@ -773,6 +828,12 @@ DEFAULT_GALLERY = [
     {"type": "image", "url": "https://images.pexels.com/photos/8500508/pexels-photo-8500508.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", "title": "Honey jar", "category": "Products", "sort_order": 6, "is_active": True},
 ]
 
+DEFAULT_REVIEWS = [
+    {"name": "Anjali Rao", "location": "Bengaluru, Karnataka", "rating": 5, "text": "The Jeerige Midi pickle reminds me of my grandmother's kitchen. Authentic, fresh and packed with love. I order every month.", "status": "featured", "is_verified_purchase": True},
+    {"name": "Rohit Shenoy", "location": "Mangalore", "rating": 5, "text": "Shadrasa honey is the purest I've tasted in years. You can tell it's straight from the forest. My kids are obsessed.", "status": "approved", "is_verified_purchase": True},
+    {"name": "Lakshmi Iyer", "location": "Chennai", "rating": 5, "text": "Premium packaging, premium taste. Feels like a luxury brand but with the warmth of homemade. Highly recommended for gifting.", "status": "approved", "is_verified_purchase": True},
+]
+
 
 async def seed_admin():
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@shadrasa.com").lower()
@@ -866,6 +927,22 @@ async def seed_cms():
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
             await db.gallery.insert_one(doc.copy())
+
+    # Reviews
+    if await db.reviews.count_documents({}) == 0:
+        for r in DEFAULT_REVIEWS:
+            doc = {
+                "id": str(uuid.uuid4()),
+                "name": r["name"],
+                "location": r["location"],
+                "rating": r["rating"],
+                "text": r["text"],
+                "image": None,
+                "status": r["status"],
+                "is_verified_purchase": r["is_verified_purchase"],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.reviews.insert_one(doc.copy())
 
 
 @app.on_event("startup")
