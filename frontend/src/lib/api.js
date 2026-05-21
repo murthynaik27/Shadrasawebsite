@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const BACKEND_URL = "https://shadrasawebsite.onrender.com";
+const BACKEND_URL = process.env.NODE_ENV === "development" 
+  ? "http://127.0.0.1:8000" 
+  : "https://shadrasawebsite.onrender.com";
 export const API = `${BACKEND_URL}/api`;
 
 export const apiClient = axios.create({
