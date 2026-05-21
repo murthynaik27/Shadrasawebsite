@@ -345,8 +345,10 @@ function InvoiceViewDrawer({ invoice, onClose }) {
             </div>
           </div>
           
-          <div className="p-8">
-            <PrintableInvoice invoice={invoice} />
+          <div className="p-4 md:p-8 overflow-x-auto">
+            <div className="min-w-[600px] md:min-w-0">
+              <PrintableInvoice invoice={invoice} />
+            </div>
           </div>
         </aside>
       </div>
@@ -361,8 +363,8 @@ function InvoiceViewDrawer({ invoice, onClose }) {
 
 function PrintableInvoice({ invoice, forPrint }) {
   return (
-    <div className={`bg-white text-black ${forPrint ? '' : 'border border-gray-200 shadow-sm p-8 rounded-lg'}`}>
-      <div className="flex justify-between items-start border-b-2 border-[#0f4d2e] pb-6 mb-6">
+    <div className={`bg-white text-black ${forPrint ? '' : 'border border-gray-200 shadow-sm p-4 md:p-8 rounded-lg'}`}>
+      <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-[#0f4d2e] pb-4 md:pb-6 mb-6 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
              <img src={LOGO_URL} alt="Logo" className="h-10 w-10" />
@@ -370,8 +372,8 @@ function PrintableInvoice({ invoice, forPrint }) {
           </div>
           <p className="text-sm text-gray-600 w-48">Premium Homemade Pickles & Pure Natural Honey</p>
         </div>
-        <div className="text-right">
-          <h2 className="text-3xl font-bold text-gray-800 mb-1">INVOICE</h2>
+        <div className="sm:text-right">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">INVOICE</h2>
           <p className="text-sm font-semibold text-gray-600"># {invoice.invoice_no}</p>
           <p className="text-sm text-gray-500 mt-1">Date: {fmtDate(invoice.created_at)}</p>
           <div className="mt-2 inline-block px-2 py-1 text-xs font-bold uppercase rounded border border-gray-300 text-gray-700">
@@ -380,7 +382,7 @@ function PrintableInvoice({ invoice, forPrint }) {
         </div>
       </div>
 
-      <div className="flex justify-between mb-8">
+      <div className="flex flex-col sm:flex-row justify-between mb-8 gap-4">
         <div>
           <p className="text-xs uppercase tracking-widest text-gray-500 font-bold mb-1">Bill To:</p>
           <h3 className="text-lg font-bold text-gray-800">{invoice.shop_name}</h3>
