@@ -23,7 +23,7 @@ import "./App.css";
 function App() {
   return (
     <CartProvider>
-      <BrowserRouter basename={process.env.PUBLIC_URL}>
+      <BrowserRouter basename="/">
         <Toaster position="top-right" richColors closeButton />
         <CartDrawer />
         <Routes>
