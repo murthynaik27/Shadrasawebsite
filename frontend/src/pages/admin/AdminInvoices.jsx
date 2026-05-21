@@ -54,8 +54,8 @@ export default function AdminInvoices() {
   );
 
   return (
-    <div data-testid="admin-invoices" className="print:hidden">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <div data-testid="admin-invoices">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3 print:hidden">
         <div>
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-[#0a331e]">Invoices</h1>
           <p className="text-[#6b3e1f] mt-1 text-sm">Wholesale and Retailer Billing System.</p>
@@ -80,7 +80,7 @@ export default function AdminInvoices() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white border border-[#6b3e1f]/10 overflow-hidden">
+      <div className="rounded-2xl bg-white border border-[#6b3e1f]/10 overflow-hidden print:hidden">
         {shown.length === 0 ? (
           <p className="p-12 text-center text-[#6b3e1f]">No invoices found.</p>
         ) : (
@@ -352,7 +352,7 @@ function InvoiceViewDrawer({ invoice, onClose }) {
       </div>
 
       {/* Print View container - hidden on screen, shown on print via tailwind print utilities */}
-      <div className="hidden print:block absolute inset-0 bg-white z-[9999] p-8 text-black">
+      <div className="hidden print:block bg-white text-black print:absolute print:left-0 print:top-0 print:w-full print:m-0 print:p-0">
         <PrintableInvoice invoice={invoice} forPrint />
       </div>
     </>

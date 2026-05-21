@@ -68,7 +68,7 @@ export default function AdminLayout() {
     <div className="min-h-screen bg-[#fdfbf7] flex" data-testid="admin-layout">
       {/* Sidebar */}
       <aside
-        className={`${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:static z-40 md:z-auto inset-y-0 left-0 w-72 bg-white border-r border-[#6b3e1f]/10 transition-transform duration-300 flex flex-col`}
+        className={`${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:static z-40 md:z-auto inset-y-0 left-0 w-72 bg-white border-r border-[#6b3e1f]/10 transition-transform duration-300 flex flex-col print:hidden`}
       >
         <div className="flex items-center justify-between p-6 border-b border-[#6b3e1f]/10">
           <Link to="/" className="flex items-center gap-3">
@@ -125,7 +125,7 @@ export default function AdminLayout() {
 
       {/* Main */}
       <div className="flex-1 min-w-0">
-        <header className="md:hidden flex items-center justify-between bg-white border-b border-[#6b3e1f]/10 px-4 py-3 sticky top-0 z-20">
+        <header className="md:hidden flex items-center justify-between bg-white border-b border-[#6b3e1f]/10 px-4 py-3 sticky top-0 z-20 print:hidden">
           <button onClick={() => setOpen(true)} className="text-[#0a331e]" aria-label="Open menu">
             <Menu size={22} />
           </button>
@@ -137,7 +137,7 @@ export default function AdminLayout() {
             <LogOut size={18} />
           </button>
         </header>
-        <main className="p-6 md:p-10">
+        <main className="p-6 md:p-10 print:p-0">
           <Outlet context={{ user }} />
         </main>
       </div>
