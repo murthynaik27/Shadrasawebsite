@@ -16,6 +16,7 @@ import AdminContent from "./pages/admin/AdminContent";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminContacts from "./pages/admin/AdminContacts";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminInvoices from "./pages/admin/AdminInvoices";
 import CartDrawer from "./components/CartDrawer";
 import "./App.css";
 
@@ -34,6 +35,7 @@ function App() {
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminOverview />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="invoices" element={<AdminInvoices />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="gallery" element={<AdminGallery />} />

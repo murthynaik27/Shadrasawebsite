@@ -15,6 +15,7 @@ import {
   Globe,
   Image as ImageIconNav,
   Star,
+  Receipt,
   X,
 } from "lucide-react";
 import { LOGO_URL, apiClient } from "../../lib/api";
@@ -23,6 +24,7 @@ import { authHeaders } from "../../lib/admin";
 const nav = [
   { to: "/admin/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { to: "/admin/invoices", label: "Invoices", icon: Receipt },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/categories", label: "Categories", icon: Tags },
   { to: "/admin/gallery", label: "Gallery", icon: ImageIconNav },

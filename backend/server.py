@@ -215,6 +215,33 @@ class OrderIn(BaseModel):
     payment_method: str = Field("cod", max_length=40)  # cod | bank | whatsapp
 
 
+class InvoiceItemIn(BaseModel):
+    product_id: Optional[str] = None
+    name: str = Field(..., max_length=160)
+    quantity: int = Field(..., ge=1)
+    weight: Optional[float] = None
+    unit: Optional[str] = None
+    price: float = Field(..., ge=0)
+    line_total: float = Field(..., ge=0)
+
+
+class InvoiceIn(BaseModel):
+    shop_name: str = Field(..., max_length=160)
+    owner_name: str = Field(..., max_length=120)
+    phone: str = Field(..., max_length=30)
+    address: str = Field(..., max_length=300)
+    gst_number: Optional[str] = Field(None, max_length=30)
+    items: List[InvoiceItemIn]
+    subtotal: float = Field(..., ge=0)
+    discount: float = Field(0, ge=0)
+    tax_rate: float = Field(0, ge=0)
+    tax_amount: float = Field(0, ge=0)
+    total: float = Field(..., ge=0)
+    payment_status: str = Field("Pending", max_length=40) # Pending, Partial, Paid
+    notes: Optional[str] = Field(None, max_length=1000)
+
+
+
 class ContentIn(BaseModel):
     # Hero
     hero_eyebrow: Optional[str] = None
@@ -558,6 +585,57 @@ async def update_order_status(oid: str, data: StatusUpdate, user: dict = Depends
     if res.matched_count == 0:
         raise HTTPException(404, "Order not found")
     return await db.orders.find_one({"id": oid}, {"_id": 0})
+
+
+# ---- Invoices ----
+@admin_router.get("/invoices")
+async def list_invoices(user: dict = Depends(get_current_user)):
+    return await db.invoices.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+
+@admin_router.get("/invoices/{iid}")
+async def get_invoice(iid: str, user: dict = Depends(get_current_user)):
+    doc = await db.invoices.find_one({"id": iid}, {"_id": 0})
+    if not doc:
+        raise HTTPException(404, "Invoice not found")
+    return doc
+
+
+@admin_router.post("/invoices", status_code=201)
+async def create_invoice(data: InvoiceIn, user: dict = Depends(get_current_user)):
+    now = datetime.now(timezone.utc)
+    # Generate Invoice Number INV-YYMMDD-XXXX
+    suffix = uuid.uuid4().hex[:4].upper()
+    invoice_no = f"INV-{now.strftime('%y%m%d')}-{suffix}"
+
+    doc = {
+        "id": str(uuid.uuid4()),
+        "invoice_no": invoice_no,
+        **data.model_dump(),
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat(),
+    }
+    await db.invoices.insert_one(doc.copy())
+    doc.pop("_id", None)
+    return doc
+
+
+@admin_router.put("/invoices/{iid}")
+async def update_invoice(iid: str, data: InvoiceIn, user: dict = Depends(get_current_user)):
+    payload = data.model_dump()
+    payload["updated_at"] = datetime.now(timezone.utc).isoformat()
+    res = await db.invoices.update_one({"id": iid}, {"$set": payload})
+    if res.matched_count == 0:
+        raise HTTPException(404, "Invoice not found")
+    return await db.invoices.find_one({"id": iid}, {"_id": 0})
+
+
+@admin_router.delete("/invoices/{iid}")
+async def delete_invoice(iid: str, user: dict = Depends(get_current_user)):
+    res = await db.invoices.delete_one({"id": iid})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Invoice not found")
+    return {"ok": True}
 
 
 # ---- Categories ----
@@ -966,6 +1044,8 @@ async def startup():
     await db.orders.create_index("id", unique=True)
     await db.orders.create_index("order_no", unique=True)
     await db.orders.create_index("created_at")
+    await db.invoices.create_index("id", unique=True)
+    await db.invoices.create_index("invoice_no", unique=True)
     await seed_admin()
     await seed_cms()
 
