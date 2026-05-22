@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Edit, Trash2, Star } from "lucide-react";
+import { Plus, Edit, Trash2, Star, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "../../lib/api";
 import { authHeaders, formatPrice } from "../../lib/admin";
@@ -17,6 +17,7 @@ export default function AdminProducts() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingProduct, setLoadingProduct] = useState(null);
 
   const load = async () => {
     const [p, c] = await Promise.all([
@@ -34,6 +35,15 @@ export default function AdminProducts() {
     setForm({ ...EMPTY, ...p, sale_price: p.sale_price ?? null, weight: p.weight ?? "", unit: p.unit ?? "g" });
   };
   const close = () => { setEditing(null); setForm(EMPTY); };
+
+  const handleProductClick = (p) => {
+    if (loadingProduct) return;
+    setLoadingProduct(p.id);
+    setTimeout(() => {
+      setLoadingProduct(null);
+      startEdit(p);
+    }, 800);
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -99,9 +109,30 @@ export default function AdminProducts() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((p) => (
-            <div key={p.id} className="rounded-2xl bg-white border border-[#6b3e1f]/10 overflow-hidden flex flex-col" data-testid={`product-row-${p.id}`}>
+            <div
+              key={p.id}
+              className={`group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(212,160,23,0.15)] hover:-translate-y-2 transition-all duration-500 ease-out cursor-pointer ${loadingProduct === p.id ? 'scale-95 opacity-90' : ''}`}
+              data-testid={`product-row-${p.id}`}
+              onClick={() => handleProductClick(p)}
+            >
               <div className="aspect-[4/3] bg-[#fdfbf7] overflow-hidden relative">
-                {p.image ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" /> : null}
+                {p.image ? (
+                  <>
+                    <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
+                    {/* Glassmorphism Hover Overlay */}
+                    <div className="absolute inset-4 bg-[#0a331e]/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center rounded-xl">
+                      <span className="bg-white/95 text-[#0f4d2e] font-semibold px-6 py-2.5 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-xl flex items-center gap-2">
+                        <Eye size={16} /> Quick Edit
+                      </span>
+                    </div>
+                  </>
+                ) : null}
+                {/* Click Loading Animation */}
+                {loadingProduct === p.id && (
+                  <div className="absolute inset-0 bg-white/60 backdrop-blur-md z-10 flex items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-[#0f4d2e]/20 border-t-[#d4a017] rounded-full animate-spin"></div>
+                  </div>
+                )}
                 {p.is_featured && (
                   <span className="absolute top-3 left-3 bg-[#d4a017] text-white text-[10px] font-bold uppercase tracking-[0.2em] px-2 py-1 rounded-full flex items-center gap-1">
                     <Star size={10} /> Featured
@@ -123,10 +154,10 @@ export default function AdminProducts() {
                   <p className="text-xs text-[#6b3e1f]">Stock: {p.stock}</p>
                 </div>
                 <div className="mt-3 flex gap-2">
-                  <button onClick={() => startEdit(p)} data-testid={`edit-${p.id}`} className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#fdfbf7] hover:bg-[#0f4d2e] hover:text-white text-[#0a331e] rounded-lg px-3 py-2 text-xs font-semibold transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); startEdit(p); }} data-testid={`edit-${p.id}`} className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#fdfbf7] hover:bg-[#0f4d2e] hover:text-white text-[#0a331e] rounded-lg px-3 py-2 text-xs font-semibold transition-colors">
                     <Edit size={13} /> Edit
                   </button>
-                  <button onClick={() => del(p)} data-testid={`delete-${p.id}`} className="inline-flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-600 hover:text-white text-red-600 rounded-lg px-3 py-2 text-xs font-semibold transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); del(p); }} data-testid={`delete-${p.id}`} className="inline-flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-600 hover:text-white text-red-600 rounded-lg px-3 py-2 text-xs font-semibold transition-colors">
                     <Trash2 size={13} />
                   </button>
                 </div>
