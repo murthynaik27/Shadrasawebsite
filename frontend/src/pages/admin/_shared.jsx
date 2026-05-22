@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Plus, X, Upload, Image as ImageIcon } from "lucide-react";
 
+import { getImageUrl } from "../../lib/api";
+
 export default function ImageInput({ value, onChange, label = "Image" }) {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,7 +43,7 @@ export default function ImageInput({ value, onChange, label = "Image" }) {
       <span className="block text-xs font-bold uppercase tracking-[0.18em] text-[#6b3e1f]">{label}</span>
       {value ? (
         <div className="relative inline-block">
-          <img src={value} alt="preview" className="h-32 w-48 object-cover rounded-xl border border-[#6b3e1f]/15" />
+          <img src={getImageUrl(value)} alt="preview" className="h-32 w-48 object-cover rounded-xl border border-[#6b3e1f]/15" />
           <button
             type="button"
             onClick={() => onChange("")}

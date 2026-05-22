@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageIcon } from "lucide-react";
+import { getImageUrl } from "../../../lib/api";
 
 export default function OptimizedImage({ 
   src, 
@@ -54,7 +55,7 @@ export default function OptimizedImage({
           initial={{ opacity: 0 }}
           animate={{ opacity: isLoaded ? 1 : 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          src={src}
+          src={getImageUrl(src)}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}

@@ -61,11 +61,11 @@ if mongo_url:
         client = MongoClient(mongo_url, serverSelectionTimeoutMS=5000)
         client.admin.command('ping')
         db = client[db_name]
-        print("✅ DB connected")
+        print("DB connected")
     except Exception as e:
-        print("❌ DB connection failed:", e)
+        print("DB connection failed:", e)
 else:
-    print("⚠️ MONGO_URL missing, db not connected")
+    print("MONGO_URL missing, db not connected")
 
 # -------- App --------
 app = FastAPI(title="Shadrasa API")

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Edit, Trash2, Star, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../lib/api";
+import { apiClient, getImageUrl } from "../../lib/api";
 import { authHeaders, formatPrice } from "../../lib/admin";
 import ImageInput, { FormShell, Label, TextInput, TextArea, EmptyState } from "./_shared";
 
@@ -118,7 +118,7 @@ export default function AdminProducts() {
               <div className="aspect-[4/3] bg-[#fdfbf7] overflow-hidden relative">
                 {p.image ? (
                   <>
-                    <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
+                    <img src={getImageUrl(p.image)} alt={p.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
                     {/* Glassmorphism Hover Overlay */}
                     <div className="absolute inset-4 bg-[#0a331e]/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center rounded-xl">
                       <span className="bg-white/95 text-[#0f4d2e] font-semibold px-6 py-2.5 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-xl flex items-center gap-2">

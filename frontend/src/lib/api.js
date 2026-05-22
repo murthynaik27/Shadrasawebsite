@@ -1,9 +1,15 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.NODE_ENV === "development" 
+export const BACKEND_URL = process.env.NODE_ENV === "development" 
   ? "http://127.0.0.1:8000" 
   : "https://shadrasawebsite.onrender.com";
 export const API = `${BACKEND_URL}/api`;
+
+export const getImageUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("/uploads")) return `${BACKEND_URL}${url}`;
+  return url;
+};
 
 export const apiClient = axios.create({
   baseURL: API,
