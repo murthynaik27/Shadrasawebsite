@@ -8,6 +8,7 @@ export default function AdminOverview() {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [recentEnq, setRecentEnq] = useState([]);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.REACT_APP_SITE_URL || "https://shadrasawebsite-szwt.vercel.app/";
 
   useEffect(() => {
     Promise.all([
@@ -43,7 +44,7 @@ export default function AdminOverview() {
         <StatCard label="Enquiries" value={stats?.enquiries ?? "—"} icon={MessageSquareText} color="#0a331e" to="/admin/enquiries" />
         <StatCard label="Contacts" value={stats?.contacts ?? "—"} icon={Inbox} color="#0f4d2e" to="/admin/contacts" />
         <StatCard label="Total Leads" value={(stats?.contacts ?? 0) + (stats?.enquiries ?? 0)} icon={TrendingUp} color="#0f4d2e" />
-        <StatCard label="View Site" value="→" icon={Globe} color="#6b3e1f" link={process.env.PUBLIC_URL || "/Shadrasawebsite"} />
+        <StatCard label="View Site" value="→" icon={Globe} color="#6b3e1f" link={siteUrl} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -67,7 +68,7 @@ function StatCard({ label, value, icon: Icon, color, to, link, target }) {
     </div>
   );
   if (to) return <Link to={to} target={target}>{body}</Link>;
-  if (link) return <a href={link} target="_blank" rel="noreferrer">{body}</a>;
+  if (link) return <a href={link} target="_blank" rel="noopener noreferrer">{body}</a>;
   return body;
 }
 
