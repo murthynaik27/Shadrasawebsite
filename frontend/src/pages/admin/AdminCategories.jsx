@@ -3,11 +3,13 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "../../lib/api";
 import { authHeaders } from "../../lib/admin";
+import { useSiteData } from "../../lib/siteData";
 import ImageInput, { FormShell, Label, TextInput, TextArea, EmptyState } from "./_shared";
 
 const EMPTY = { name: "", slug: "", description: "", image: "", is_active: true, sort_order: 0 };
 
 export default function AdminCategories() {
+  const { refreshSiteData } = useSiteData();
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
@@ -34,6 +36,7 @@ export default function AdminCategories() {
       setEditing(null);
       setForm(EMPTY);
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed");
     } finally {
@@ -47,6 +50,7 @@ export default function AdminCategories() {
       await apiClient.delete(`/admin/categories/${c.id}`, { headers: authHeaders() });
       toast.success("Deleted");
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed");
     }

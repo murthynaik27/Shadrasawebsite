@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Star, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient, getImageUrl } from "../../lib/api";
 import { authHeaders, formatPrice } from "../../lib/admin";
+import { useSiteData } from "../../lib/siteData";
 import ImageInput, { FormShell, Label, TextInput, TextArea, EmptyState } from "./_shared";
 import OptimizedImage from "../ui/OptimizedImage";
 
@@ -13,6 +14,7 @@ const EMPTY = {
 };
 
 export default function AdminProducts() {
+  const { refreshSiteData } = useSiteData();
   const [items, setItems] = useState([]);
   const [cats, setCats] = useState([]);
   const [editing, setEditing] = useState(null);
@@ -67,6 +69,7 @@ export default function AdminProducts() {
       }
       close();
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed to save");
     } finally {
@@ -80,6 +83,7 @@ export default function AdminProducts() {
       await apiClient.delete(`/admin/products/${p.id}`, { headers: authHeaders() });
       toast.success("Deleted");
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed to delete");
     }

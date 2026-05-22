@@ -3,9 +3,11 @@ import { Edit, Trash2, Star, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "../../lib/api";
 import { authHeaders } from "../../lib/admin";
+import { useSiteData } from "../../lib/siteData";
 import ImageInput, { FormShell, Label, TextInput, TextArea, EmptyState } from "./_shared";
 
 export default function AdminReviews() {
+  const { refreshSiteData } = useSiteData();
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(null);
@@ -30,6 +32,7 @@ export default function AdminReviews() {
       setEditing(null);
       setForm(null);
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed to save");
     } finally {
@@ -43,6 +46,7 @@ export default function AdminReviews() {
       await apiClient.delete(`/admin/reviews/${item.id}`, { headers: authHeaders() });
       toast.success("Deleted");
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed to delete");
     }
@@ -53,6 +57,7 @@ export default function AdminReviews() {
       await apiClient.put(`/admin/reviews/${item.id}`, { ...item, status }, { headers: authHeaders() });
       toast.success(`Review ${status}`);
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed to update status");
     }

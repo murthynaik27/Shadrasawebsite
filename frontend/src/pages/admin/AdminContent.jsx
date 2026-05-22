@@ -3,6 +3,7 @@ import { Save } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "../../lib/api";
 import { authHeaders } from "../../lib/admin";
+import { useSiteData } from "../../lib/siteData";
 import ImageInput, { Label, TextInput, TextArea } from "./_shared";
 
 const SECTIONS = [
@@ -65,6 +66,7 @@ const SECTIONS = [
 ];
 
 export default function AdminContent() {
+  const { refreshSiteData } = useSiteData();
   const [content, setContent] = useState({});
   const [saving, setSaving] = useState(false);
 
@@ -86,6 +88,7 @@ export default function AdminContent() {
       });
       await apiClient.put("/admin/content", payload, { headers: authHeaders() });
       toast.success("Content saved");
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed to save");
     } finally {

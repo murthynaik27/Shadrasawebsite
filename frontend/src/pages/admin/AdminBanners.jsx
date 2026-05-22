@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../lib/api";
+import { apiClient, getImageUrl } from "../../lib/api";
 import { authHeaders } from "../../lib/admin";
+import { useSiteData } from "../../lib/siteData";
 import ImageInput, { FormShell, Label, TextInput, EmptyState } from "./_shared";
 
 const EMPTY = { title: "", subtitle: "", image: "", cta_label: "", cta_href: "", is_active: true, sort_order: 0 };
 
 export default function AdminBanners() {
+  const { refreshSiteData } = useSiteData();
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
@@ -34,6 +36,7 @@ export default function AdminBanners() {
       setEditing(null);
       setForm(EMPTY);
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed");
     } finally {
@@ -45,6 +48,7 @@ export default function AdminBanners() {
     try {
       await apiClient.put(`/admin/banners/${b.id}`, { ...b, is_active: !b.is_active }, { headers: authHeaders() });
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed");
     }
@@ -56,6 +60,7 @@ export default function AdminBanners() {
       await apiClient.delete(`/admin/banners/${b.id}`, { headers: authHeaders() });
       toast.success("Deleted");
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed");
     }
@@ -80,7 +85,7 @@ export default function AdminBanners() {
           {items.map((b) => (
             <div key={b.id} className="rounded-2xl bg-white border border-[#6b3e1f]/10 overflow-hidden">
               <div className="relative aspect-[16/9] bg-[#fdfbf7] overflow-hidden">
-                {b.image && <img src={b.image} alt={b.title || "banner"} className="w-full h-full object-cover" />}
+                {b.image && <img src={getImageUrl(b.image)} alt={b.title || "banner"} className="w-full h-full object-cover" />}
                 <span className={`absolute top-3 right-3 text-[10px] font-bold uppercase tracking-[0.2em] px-2 py-1 rounded-full ${b.is_active ? "bg-[#0f4d2e] text-white" : "bg-gray-500 text-white"}`}>
                   {b.is_active ? "Live" : "Hidden"}
                 </span>

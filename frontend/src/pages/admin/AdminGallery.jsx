@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { Plus, Edit, Trash2, Video, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../lib/api";
+import { apiClient, getImageUrl } from "../../lib/api";
 import { authHeaders } from "../../lib/admin";
+import { useSiteData } from "../../lib/siteData";
 import ImageInput, { FormShell, Label, TextInput, EmptyState } from "./_shared";
 
 const EMPTY = { title: "", type: "image", url: "", category: "", is_active: true, sort_order: 0 };
 
 export default function AdminGallery() {
+  const { refreshSiteData } = useSiteData();
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
@@ -39,6 +41,7 @@ export default function AdminGallery() {
       setEditing(null);
       setForm(EMPTY);
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed to save");
     } finally {
@@ -52,6 +55,7 @@ export default function AdminGallery() {
       await apiClient.delete(`/admin/gallery/${item.id}`, { headers: authHeaders() });
       toast.success("Deleted");
       load();
+      refreshSiteData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Failed to delete");
     }
@@ -88,7 +92,7 @@ export default function AdminGallery() {
                     </div>
                   </>
                 ) : (
-                  <img src={it.url} alt={it.title} className="w-full h-full object-cover" />
+                  <img src={getImageUrl(it.url)} alt={it.title} className="w-full h-full object-cover" />
                 )}
                 
                 <span className={`absolute top-2 left-2 text-[10px] uppercase tracking-[0.18em] font-bold px-2 py-0.5 rounded-full ${it.is_active ? "bg-[#0f4d2e] text-white" : "bg-gray-400 text-white"}`}>
