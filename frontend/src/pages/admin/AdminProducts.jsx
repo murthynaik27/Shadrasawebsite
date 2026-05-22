@@ -5,7 +5,7 @@ import { apiClient, getImageUrl } from "../../lib/api";
 import { authHeaders, formatPrice } from "../../lib/admin";
 import { useSiteData } from "../../lib/siteData";
 import ImageInput, { FormShell, Label, TextInput, TextArea, EmptyState } from "./_shared";
-import OptimizedImage from "../ui/OptimizedImage";
+import OptimizedImage from "../../components/ui/OptimizedImage";
 
 const EMPTY = {
   name: "", tagline: "", description: "", category_id: "", price: 0, sale_price: null,

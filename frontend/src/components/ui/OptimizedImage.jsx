@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageIcon } from "lucide-react";
-import { getImageUrl } from "../../../lib/api";
+import { getImageUrl } from "../../lib/api";
 
 export default function OptimizedImage({ 
   src, 
