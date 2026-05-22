@@ -720,17 +720,17 @@ def generate_invoice_pdf_bytes(invoice: dict) -> bytes:
     for item in invoice.get('items', []):
         pdf.cell(90, 6, str(item.get('name', '')), border=1)
         pdf.cell(20, 6, str(item.get('quantity', '')), border=1, align="C")
-        pdf.cell(35, 6, f"₹{item.get('price', 0):.2f}", border=1, align="R")
-        pdf.cell(35, 6, f"₹{item.get('line_total', 0):.2f}", border=1, align="R")
+        pdf.cell(35, 6, f"Rs. {item.get('price', 0):.2f}", border=1, align="R")
+        pdf.cell(35, 6, f"Rs. {item.get('line_total', 0):.2f}", border=1, align="R")
         pdf.ln()
 
     pdf.ln(4)
-    pdf.cell(0, 6, f"Subtotal: ₹{invoice.get('subtotal', 0):.2f}", ln=True, align="R")
+    pdf.cell(0, 6, f"Subtotal: Rs. {invoice.get('subtotal', 0):.2f}", ln=True, align="R")
     if invoice.get('discount', 0):
-        pdf.cell(0, 6, f"Discount: -₹{invoice.get('discount', 0):.2f}", ln=True, align="R")
+        pdf.cell(0, 6, f"Discount: -Rs. {invoice.get('discount', 0):.2f}", ln=True, align="R")
     if invoice.get('tax_amount', 0):
-        pdf.cell(0, 6, f"Tax ({invoice.get('tax_rate', 0)}%): +₹{invoice.get('tax_amount', 0):.2f}", ln=True, align="R")
-    pdf.cell(0, 6, f"Total: ₹{invoice.get('total', 0):.2f}", ln=True, align="R")
+        pdf.cell(0, 6, f"Tax ({invoice.get('tax_rate', 0)}%): +Rs. {invoice.get('tax_amount', 0):.2f}", ln=True, align="R")
+    pdf.cell(0, 6, f"Total: Rs. {invoice.get('total', 0):.2f}", ln=True, align="R")
 
     if invoice.get('notes'):
         pdf.ln(8)
