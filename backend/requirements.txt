@@ -8,3 +8,4 @@ resend
 email-validator
 certifi
 fpdf
+python-multipart
