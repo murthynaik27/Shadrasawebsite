@@ -48,9 +48,9 @@ export default function AdminInvoices() {
   };
 
   const shown = invoices.filter(i => 
-    i.invoice_no.toLowerCase().includes(search.toLowerCase()) || 
-    i.shop_name.toLowerCase().includes(search.toLowerCase()) ||
-    i.phone.includes(search)
+    (i.invoice_no || "").toLowerCase().includes(search.toLowerCase()) || 
+    (i.shop_name || "").toLowerCase().includes(search.toLowerCase()) ||
+    String(i.phone || "").includes(search)
   );
 
   return (
