@@ -607,6 +607,19 @@ async def get_invoice(iid: str, user: dict = Depends(get_current_user)):
     return doc
 
 
+@api_router.get("/invoices/{iid}/pdf")
+async def public_invoice_pdf(iid: str):
+    doc = await db.invoices.find_one({"id": iid}, {"_id": 0})
+    if not doc:
+        raise HTTPException(404, "Invoice not found")
+    pdf_bytes = generate_invoice_pdf_bytes(doc)
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename=Invoice-{doc['invoice_no']}.pdf"},
+    )
+
+
 @admin_router.post("/invoices", status_code=201)
 async def create_invoice(data: InvoiceIn, user: dict = Depends(get_current_user)):
     now = datetime.now(timezone.utc)

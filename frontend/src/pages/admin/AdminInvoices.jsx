@@ -344,7 +344,7 @@ function InvoiceViewDrawer({ invoice, onClose }) {
       return response.data?.url;
     } catch (error) {
       console.warn("Publish endpoint failed, falling back to direct PDF URL", error);
-      return `${API}/admin/invoices/${invoice.id}/pdf`;
+      return `${API}/invoices/${invoice.id}/pdf`;
     }
   };
 
