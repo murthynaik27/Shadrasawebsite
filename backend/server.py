@@ -38,7 +38,7 @@ try:
     from fastapi.staticfiles import StaticFiles
     from fastapi.responses import StreamingResponse
     from starlette.middleware.cors import CORSMiddleware
-    from motor.motor_asyncio import AsyncIOMotorClient
+    from pymongo import MongoClient
     from pydantic import BaseModel, Field, EmailStr
     from io import BytesIO
     from fpdf import FPDF
@@ -56,8 +56,13 @@ UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 if mongo_url:
-    client = AsyncIOMotorClient(mongo_url, tls=True, tlsCAFile=certifi.where())
-    db = client[db_name]
+    try:
+        client = MongoClient(mongo_url, serverSelectionTimeoutMS=5000)
+        client.admin.command('ping')
+        db = client[db_name]
+        print("✅ DB connected")
+    except Exception as e:
+        print("❌ DB connection failed:", e)
 else:
     print("⚠️ MONGO_URL missing, db not connected")
 
