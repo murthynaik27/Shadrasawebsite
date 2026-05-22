@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Award, ArrowRight, ShoppingBag, ShoppingCart } from "lucide-react";
+import { Award, ArrowRight, ShoppingBag, ShoppingCart, Eye } from "lucide-react";
 import EnquiryDialog from "./EnquiryDialog";
 import { formatPrice } from "../lib/admin";
 import { useCart } from "../lib/CartContext";
@@ -9,6 +9,7 @@ import { useCart } from "../lib/CartContext";
 export default function Products({ products = [] }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(null);
+  const [loadingProduct, setLoadingProduct] = useState(null);
   const { add } = useCart();
 
   const enquire = (p) => {
@@ -16,7 +17,22 @@ export default function Products({ products = [] }) {
     setOpen(true);
   };
 
-  const addToCart = (p) => {
+  const handleProductClick = (p) => {
+    if (loadingProduct) return;
+    setLoadingProduct(p.id);
+    setTimeout(() => {
+      setLoadingProduct(null);
+      enquire(p);
+    }, 800);
+  };
+
+  const handleEnquireClick = (e, p) => {
+    e.stopPropagation();
+    enquire(p);
+  };
+
+  const addToCart = (e, p) => {
+    e.stopPropagation();
     if (p.stock <= 0) {
       toast.error("Out of stock");
       return;
@@ -53,14 +69,28 @@ export default function Products({ products = [] }) {
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.7, delay: i * 0.12 }}
                 data-testid={`product-card-${p.id}`}
-                className="group relative rounded-3xl overflow-hidden bg-white border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_24px_60px_rgb(15,77,46,0.12)] transition-all duration-500 flex flex-col"
+                className={`group relative rounded-3xl overflow-hidden bg-white border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(212,160,23,0.15)] hover:-translate-y-2 transition-all duration-500 ease-out flex flex-col cursor-pointer ${loadingProduct === p.id ? 'scale-95 opacity-90' : ''}`}
+                onClick={() => handleProductClick(p)}
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img
                     src={p.image}
                     alt={p.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                   />
+                  {/* Glassmorphism Hover Overlay */}
+                  <div className="absolute inset-0 bg-[#0a331e]/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                    <span className="bg-white/95 text-[#0f4d2e] font-semibold px-6 py-2.5 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-xl flex items-center gap-2">
+                      <Eye size={16} /> Quick View
+                    </span>
+                  </div>
+                  {/* Click Loading Animation */}
+                  {loadingProduct === p.id && (
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-md z-10 flex items-center justify-center">
+                      <div className="w-12 h-12 border-4 border-[#0f4d2e]/20 border-t-[#d4a017] rounded-full animate-spin"></div>
+                    </div>
+                  )}
                   {p.premium_badge && (
                     <div className="absolute top-5 left-5 flex items-center gap-2 bg-white/95 backdrop-blur px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-[#0f4d2e]">
                       <Award size={14} /> {p.premium_badge}
@@ -105,7 +135,7 @@ export default function Products({ products = [] }) {
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2">
                   <button
-                    onClick={() => addToCart(p)}
+                    onClick={(e) => addToCart(e, p)}
                     disabled={p.stock <= 0}
                     data-testid={`add-cart-btn-${p.id}`}
                     className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0f4d2e] hover:bg-[#d4a017] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full font-semibold transition-all duration-300 px-6 py-3 text-sm btn-glow"
@@ -113,7 +143,7 @@ export default function Products({ products = [] }) {
                     <ShoppingCart size={15} /> Add to Cart
                   </button>
                   <button
-                    onClick={() => enquire(p)}
+                    onClick={(e) => handleEnquireClick(e, p)}
                     data-testid={`enquire-btn-${p.id}`}
                     className="flex-1 inline-flex items-center justify-center gap-2 bg-white border-2 border-[#0f4d2e]/15 hover:border-[#0f4d2e] text-[#0f4d2e] rounded-full font-semibold transition-all duration-300 px-6 py-3 text-sm"
                   >

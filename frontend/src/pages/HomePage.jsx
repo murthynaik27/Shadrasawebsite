@@ -24,6 +24,7 @@ export default function HomePage() {
       <main>
         <Hero content={site.content} banners={site.banners} />
         <Categories categories={site.categories} loading={site.loading} />
+        <Products products={site.products} />
         <About content={site.content} />
         <WhyUs />
         <Gallery gallery={site.gallery} />

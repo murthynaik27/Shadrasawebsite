@@ -107,27 +107,7 @@ export default function CategoryPage() {
             </h1>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-8 pb-4 border-b border-[#6b3e1f]/10 text-xs font-semibold text-[#6b3e1f] tracking-wider uppercase">
-            <div className="flex items-center gap-4">
-              <span>Filter:</span>
-              <select className="bg-transparent border-none outline-none cursor-pointer">
-                <option>Availability</option>
-              </select>
-              <select className="bg-transparent border-none outline-none cursor-pointer">
-                <option>Price</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-4 mt-4 sm:mt-0">
-              <div className="flex items-center gap-2">
-                <span>Sort by:</span>
-                <select className="bg-transparent border-none outline-none cursor-pointer">
-                  <option>Featured</option>
-                  <option>Best selling</option>
-                </select>
-              </div>
-              <span className="opacity-60">{products.length} products</span>
-            </div>
-          </div>
+
 
           {(loading || siteLoading) ? (
             <div className="flex flex-col items-center justify-center py-20 min-h-[40vh]">
