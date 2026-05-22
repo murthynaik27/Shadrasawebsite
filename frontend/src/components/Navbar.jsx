@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ShoppingBag } from "lucide-react";
 import { LOGO_URL } from "../lib/api";
 import { useCart } from "../lib/CartContext";
@@ -15,14 +16,81 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
   const { count, setOpen: openCart } = useCart();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 30);
+      
+      if (location.pathname === "/") {
+        const sections = links.map(l => l.href.substring(1));
+        let current = "";
+        
+        for (const id of sections) {
+          if (id === "home") continue;
+          const element = document.getElementById(id);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            if (rect.top <= window.innerHeight / 3 && rect.bottom >= window.innerHeight / 3) {
+              current = id;
+              break;
+            }
+          }
+        }
+        
+        if (window.scrollY < window.innerHeight / 3) {
+          current = "home";
+        }
+        
+        setActiveSection(current);
+      } else {
+        setActiveSection("");
+      }
+    };
+    
     onScroll();
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.substring(1);
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, [location]);
+
+  const handleNavClick = (e, href) => {
+    e.preventDefault();
+    setOpen(false);
+
+    if (href.startsWith("#")) {
+      const targetId = href.substring(1);
+      
+      if (location.pathname !== "/") {
+        navigate("/" + href);
+      } else {
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+          window.history.pushState(null, "", href);
+        } else if (targetId === "home") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          window.history.pushState(null, "", href);
+        }
+      }
+    } else {
+      navigate(href);
+    }
+  };
 
   return (
     <header
@@ -59,9 +127,14 @@ export default function Navbar() {
             <a
               key={l.href}
               href={l.href}
+              onClick={(e) => handleNavClick(e, l.href)}
               data-testid={`nav-link-${l.label.toLowerCase().replace(" ", "-")}`}
               className={`text-sm font-medium transition-colors hover:text-[#d4a017] ${
-                scrolled ? "text-[#0a331e]" : "text-white"
+                activeSection === l.href.substring(1)
+                  ? "text-[#d4a017]"
+                  : scrolled
+                  ? "text-[#0a331e]"
+                  : "text-white"
               }`}
             >
               {l.label}
@@ -69,6 +142,7 @@ export default function Navbar() {
           ))}
           <a
             href="#contact"
+            onClick={(e) => handleNavClick(e, "#contact")}
             data-testid="nav-cta-contact"
             className="bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-full font-semibold transition-all duration-300 px-6 py-2.5 text-sm btn-glow"
           >
@@ -123,16 +197,18 @@ export default function Navbar() {
             <a
               key={l.href}
               href={l.href}
-              onClick={() => setOpen(false)}
+              onClick={(e) => handleNavClick(e, l.href)}
               data-testid={`mobile-nav-link-${l.label.toLowerCase().replace(" ", "-")}`}
-              className="block py-2 text-[#0a331e] font-medium hover:text-[#d4a017]"
+              className={`block py-2 font-medium transition-colors hover:text-[#d4a017] ${
+                activeSection === l.href.substring(1) ? "text-[#d4a017]" : "text-[#0a331e]"
+              }`}
             >
               {l.label}
             </a>
           ))}
           <a
             href="#contact"
-            onClick={() => setOpen(false)}
+            onClick={(e) => handleNavClick(e, "#contact")}
             className="block bg-[#0f4d2e] text-white text-center rounded-full font-semibold px-6 py-3"
           >
             Get In Touch
