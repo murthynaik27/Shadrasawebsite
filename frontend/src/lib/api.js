@@ -1,8 +1,6 @@
 import axios from "axios";
 
-export const BACKEND_URL = import.meta.env?.MODE === "development" || import.meta.env?.DEV
-  ? "http://127.0.0.1:8000" 
-  : (import.meta.env?.VITE_API_URL || "http://127.0.0.1:8000");
+export const BACKEND_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 // Also strip trailing slash if present
 const cleanBackendUrl = BACKEND_URL.replace(/\/$/, "");

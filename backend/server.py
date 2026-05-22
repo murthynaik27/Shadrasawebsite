@@ -339,13 +339,11 @@ def process_and_save_image(base64_str: str, prefix: str = "img") -> dict:
             
         img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
         
-        file_id = f"{prefix}_{uuid.uuid4().hex[:8]}"
-        filename = f"{file_id}.webp"
-        filepath = UPLOADS_DIR / "images" / filename
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        
         # Save as WebP for optimal size and compatibility
-        img.save(filepath, format="WEBP", quality=80, method=6)
+        buffered_webp = BytesIO()
+        img.save(buffered_webp, format="WEBP", quality=80, method=6)
+        webp_base64 = base64.b64encode(buffered_webp.getvalue()).decode("utf-8")
+        file_url = f"data:image/webp;base64,{webp_base64}"
         
         # Generate Blur Data URI
         blur_img = img.copy()
@@ -354,10 +352,6 @@ def process_and_save_image(base64_str: str, prefix: str = "img") -> dict:
         blur_img.save(buffered, format="JPEG", quality=40)
         blur_base64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
         blur_data_uri = f"data:image/jpeg;base64,{blur_base64}"
-        
-        # Add base URL to path
-        base_url = os.environ.get("BASE_URL", "").rstrip("/")
-        file_url = f"{base_url}/uploads/images/{filename}"
         
         return {"url": file_url, "blur": blur_data_uri}
     except Exception as e:

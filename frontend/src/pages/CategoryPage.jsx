@@ -205,13 +205,11 @@ export default function CategoryPage() {
                         <div className="mb-4">
                           {p.sale_price && p.sale_price < p.price ? (
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-[#6b3e1f]">From</span>
                               <span className="font-semibold text-[#0a331e]">{formatPrice(p.sale_price, p.currency)}</span>
                               <span className="text-xs line-through text-[#6b3e1f]/60">{formatPrice(p.price, p.currency)}</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-[#6b3e1f]">From</span>
                               <span className="font-semibold text-[#0a331e]">{formatPrice(p.price, p.currency)}</span>
                             </div>
                           )}
@@ -221,9 +219,9 @@ export default function CategoryPage() {
                       <button
                         onClick={(e) => { e.stopPropagation(); addToCart(p); }}
                         disabled={p.stock <= 0}
-                        className="w-full py-3 px-4 rounded-xl text-sm font-semibold text-[#0f4d2e] bg-[#fdfbf7] border border-[#0f4d2e]/20 hover:bg-[#0f4d2e] hover:text-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#fdfbf7] disabled:hover:text-[#0f4d2e]"
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-[#0f4d2e] border border-[#0f4d2e]/20 hover:bg-[#d4a017] hover:border-[#d4a017] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Choose options
+                        <ShoppingCart size={15} /> Add to Cart
                       </button>
                     </div>
                   </motion.div>
