@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { CartProvider } from "./lib/CartContext";
 import HomePage from "./pages/HomePage";
+import CategoryPage from "./pages/CategoryPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccess from "./pages/OrderSuccess";
 import AdminLogin from "./pages/AdminLogin";
@@ -28,6 +29,7 @@ function App() {
         <CartDrawer />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-success/:orderNo" element={<OrderSuccess />} />
           <Route path="/admin/login" element={<AdminLogin />} />

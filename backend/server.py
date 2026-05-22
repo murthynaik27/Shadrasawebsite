@@ -169,6 +169,7 @@ class CategoryIn(BaseModel):
     name: str = Field(..., min_length=1, max_length=80)
     slug: Optional[str] = Field(None, max_length=80)
     description: Optional[str] = Field(None, max_length=500)
+    image: Optional[str] = None
     is_active: bool = True
     sort_order: int = 0
 

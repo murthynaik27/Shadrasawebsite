@@ -1,6 +1,7 @@
 import Loader from "../components/Loader";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
+import Categories from "../components/Categories";
 import About from "../components/About";
 import WhyUs from "../components/WhyUs";
 import Products from "../components/Products";
@@ -22,6 +23,7 @@ export default function HomePage() {
       <Navbar />
       <main>
         <Hero content={site.content} banners={site.banners} />
+        <Categories categories={site.categories} />
         <Products products={site.products} />
         <About content={site.content} />
         <WhyUs />

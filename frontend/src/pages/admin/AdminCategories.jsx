@@ -3,9 +3,9 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "../../lib/api";
 import { authHeaders } from "../../lib/admin";
-import { FormShell, Label, TextInput, TextArea, EmptyState } from "./_shared";
+import ImageInput, { FormShell, Label, TextInput, TextArea, EmptyState } from "./_shared";
 
-const EMPTY = { name: "", slug: "", description: "", is_active: true, sort_order: 0 };
+const EMPTY = { name: "", slug: "", description: "", image: "", is_active: true, sort_order: 0 };
 
 export default function AdminCategories() {
   const [items, setItems] = useState([]);
@@ -116,6 +116,7 @@ export default function AdminCategories() {
             <Label>Description</Label>
             <TextArea rows={3} value={form.description || ""} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </label>
+          <ImageInput value={form.image} onChange={(v) => setForm({ ...form, image: v })} label="Category Image" />
           <div className="grid grid-cols-2 gap-4">
             <label className="flex items-center gap-2 text-sm font-semibold text-[#0a331e] cursor-pointer pt-6">
               <input type="checkbox" checked={!!form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="h-4 w-4 accent-[#0f4d2e]" />
