@@ -6,7 +6,7 @@ export default function Categories({ categories = [], loading = false }) {
   if (!loading && (!categories || categories.length === 0)) return null;
 
   return (
-    <section id="categories" data-testid="categories-section" className="pt-24 md:pt-32 pb-12 md:pb-16 bg-[#fdfbf7] min-h-[500px]">
+    <section id="products" data-testid="categories-section" className="pt-24 md:pt-32 pb-12 md:pb-16 bg-[#fdfbf7] min-h-[500px]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

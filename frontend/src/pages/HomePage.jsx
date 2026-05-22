@@ -4,7 +4,6 @@ import Hero from "../components/Hero";
 import Categories from "../components/Categories";
 import About from "../components/About";
 import WhyUs from "../components/WhyUs";
-import Products from "../components/Products";
 import Gallery from "../components/Gallery";
 import HeritageVideo from "../components/HeritageVideo";
 import TrustCounters from "../components/TrustCounters";
@@ -24,7 +23,6 @@ export default function HomePage() {
       <main>
         <Hero content={site.content} banners={site.banners} />
         <Categories categories={site.categories} loading={site.loading} />
-        <Products products={site.products} />
         <About content={site.content} />
         <WhyUs />
         <Gallery gallery={site.gallery} />
