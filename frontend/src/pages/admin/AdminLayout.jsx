@@ -68,7 +68,7 @@ export default function AdminLayout() {
     <div className="min-h-screen bg-[#fdfbf7] flex" data-testid="admin-layout">
       {/* Sidebar */}
       <aside
-        className={`${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:static z-40 md:z-auto inset-y-0 left-0 w-72 bg-white border-r border-[#6b3e1f]/10 transition-transform duration-300 flex flex-col print:hidden`}
+        className={`${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:static z-40 md:z-auto inset-y-0 left-0 w-[min(100%,18rem)] md:w-72 bg-white border-r border-[#6b3e1f]/10 transition-transform duration-300 flex flex-col print:hidden`}
       >
         <div className="flex items-center justify-between p-6 border-b border-[#6b3e1f]/10">
           <Link to="/" className="flex items-center gap-3">

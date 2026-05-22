@@ -68,7 +68,8 @@ export default function AdminCategories() {
         <EmptyState title="No categories yet." />
       ) : (
         <div className="rounded-2xl bg-white border border-[#6b3e1f]/10 overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-[#fdfbf7]">
               <tr className="text-left">
                 {["Name", "Slug", "Status", "Sort", "Actions"].map((h) => (
@@ -97,6 +98,7 @@ export default function AdminCategories() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

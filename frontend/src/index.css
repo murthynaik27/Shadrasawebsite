@@ -12,6 +12,33 @@
   --shadrasa-text: #4a453f;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img,
+video,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+[id] {
+  scroll-margin-top: 5.5rem;
+}
+
 html {
   scroll-behavior: smooth;
 }

@@ -110,6 +110,7 @@ export default function Navbar() {
             onClick={() => setOpen(!open)}
             className={`p-2 rounded-md ${scrolled ? "text-[#0a331e]" : "text-white"}`}
             aria-label="Toggle menu"
+            aria-expanded={open}
           >
             {open ? <X size={26} /> : <Menu size={26} />}
           </button>
@@ -117,7 +118,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="lg:hidden bg-white border-t border-[#0f4d2e]/10 px-4 py-6 space-y-3 shadow-xl">
+        <div className="lg:hidden fixed inset-x-0 top-full z-40 bg-white/95 backdrop-blur-md border-t border-[#0f4d2e]/10 px-4 py-6 space-y-3 shadow-xl max-h-[calc(100vh-5rem)] overflow-y-auto">
           {links.map((l) => (
             <a
               key={l.href}
