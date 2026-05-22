@@ -183,7 +183,10 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
     try {
       const payload = {
         ...formData,
-        items,
+        items: items.map(it => ({
+          ...it,
+          weight: it.weight === "" ? null : Number(it.weight)
+        })),
         subtotal,
         discount: discountAmt,
         tax_rate: taxRate,
