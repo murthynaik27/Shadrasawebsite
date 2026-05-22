@@ -28,9 +28,12 @@ logging.basicConfig(level=logging.INFO)
 try:
     from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, File, UploadFile
     from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import StreamingResponse
     from starlette.middleware.cors import CORSMiddleware
     from motor.motor_asyncio import AsyncIOMotorClient
     from pydantic import BaseModel, Field, EmailStr
+    from io import BytesIO
+    from fpdf import FPDF
 except Exception:
     logging.exception("Failed importing FastAPI or other runtime dependencies during startup")
     traceback.print_exc()
@@ -303,6 +306,23 @@ class ContentIn(BaseModel):
 @api_router.get("/")
 async def root():
     return {"message": "Shadrasa API", "status": "ok"}
+
+
+@api_router.get("/health")
+async def health():
+    info = {"status": "ok", "uptime": datetime.now(timezone.utc).isoformat()}
+    try:
+        if db is None:
+            info["db"] = "disconnected"
+            info["status"] = "degraded"
+        else:
+            # ping the database to ensure connectivity
+            await db.command("ping")
+            info["db"] = "ok"
+    except Exception as e:
+        info["db"] = f"error: {str(e)}"
+        info["status"] = "error"
+    return info
 
 
 @api_router.post("/auth/login")
@@ -1203,3 +1223,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Log basic startup info for Render logs and debugging
+logger.info(f"Shadrasa API initialized. DB connected: {db is not None}")
