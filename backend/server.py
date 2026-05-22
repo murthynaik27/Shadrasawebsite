@@ -505,7 +505,7 @@ async def site_content():
 
 @api_router.get("/site/categories")
 async def site_categories():
-    items = list(list(db.categories.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).limit(200))
+    items = list(db.categories.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).limit(200))
     return items
 
 
@@ -559,10 +559,10 @@ async def submit_review(data: ReviewIn):
 @admin_router.get("/dashboard")
 async def dashboard(user: dict = Depends(get_current_user)):
     pending = db.orders.count_documents({"status": {"$in": ["placed", "confirmed", "packed"]}})
-    revenue_agg = db.orders.aggregate([
+    revenue_agg = list(db.orders.aggregate([
         {"$match": {"status": {"$nin": ["cancelled"]}}},
         {"$group": {"_id": None, "total": {"$sum": "$total"}}},
-    ]).limit(1))
+    ]))
     total_revenue = revenue_agg[0]["total"] if revenue_agg else 0
     return {
         "products": db.products.count_documents({}),
