@@ -13,9 +13,12 @@ import resend
 import certifi
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
+from io import BytesIO
 
 from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, File, UploadFile
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from fpdf import FPDF
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
@@ -623,6 +626,67 @@ async def create_invoice(data: InvoiceIn, user: dict = Depends(get_current_user)
     return doc
 
 
+def generate_invoice_pdf_bytes(invoice: dict) -> bytes:
+    pdf = FPDF(format="A4")
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, "Shadrasa Invoice", ln=True)
+    pdf.ln(4)
+
+    pdf.set_font("Arial", "", 10)
+    pdf.cell(0, 6, f"Invoice #: {invoice.get('invoice_no', '')}", ln=True)
+    pdf.cell(0, 6, f"Date: {invoice.get('created_at', '')}", ln=True)
+    pdf.cell(0, 6, f"Status: {invoice.get('payment_status', '')}", ln=True)
+    pdf.ln(6)
+
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 7, "Bill To:", ln=True)
+    pdf.set_font("Arial", "", 10)
+    pdf.cell(0, 6, invoice.get('shop_name', ''), ln=True)
+    pdf.cell(0, 6, invoice.get('owner_name', ''), ln=True)
+    pdf.multi_cell(0, 6, invoice.get('address', ''))
+    pdf.cell(0, 6, f"Phone: {invoice.get('phone', '')}", ln=True)
+    if invoice.get('gst_number'):
+        pdf.cell(0, 6, f"GSTIN: {invoice.get('gst_number')}", ln=True)
+    pdf.ln(8)
+
+    pdf.set_font("Arial", "B", 11)
+    pdf.cell(90, 7, "Item Description", border=1)
+    pdf.cell(20, 7, "Qty", border=1, align="C")
+    pdf.cell(35, 7, "Price", border=1, align="R")
+    pdf.cell(35, 7, "Amount", border=1, align="R")
+    pdf.ln()
+
+    pdf.set_font("Arial", "", 10)
+    for item in invoice.get('items', []):
+        pdf.cell(90, 6, str(item.get('name', '')), border=1)
+        pdf.cell(20, 6, str(item.get('quantity', '')), border=1, align="C")
+        pdf.cell(35, 6, f"₹{item.get('price', 0):.2f}", border=1, align="R")
+        pdf.cell(35, 6, f"₹{item.get('line_total', 0):.2f}", border=1, align="R")
+        pdf.ln()
+
+    pdf.ln(4)
+    pdf.cell(0, 6, f"Subtotal: ₹{invoice.get('subtotal', 0):.2f}", ln=True, align="R")
+    if invoice.get('discount', 0):
+        pdf.cell(0, 6, f"Discount: -₹{invoice.get('discount', 0):.2f}", ln=True, align="R")
+    if invoice.get('tax_amount', 0):
+        pdf.cell(0, 6, f"Tax ({invoice.get('tax_rate', 0)}%): +₹{invoice.get('tax_amount', 0):.2f}", ln=True, align="R")
+    pdf.cell(0, 6, f"Total: ₹{invoice.get('total', 0):.2f}", ln=True, align="R")
+
+    if invoice.get('notes'):
+        pdf.ln(8)
+        pdf.set_font("Arial", "B", 11)
+        pdf.cell(0, 6, "Notes / Terms:", ln=True)
+        pdf.set_font("Arial", "", 10)
+        pdf.multi_cell(0, 6, invoice.get('notes', ''))
+
+    output = BytesIO()
+    output.write(pdf.output(dest='S').encode('latin1'))
+    return output.getvalue()
+
+
 @admin_router.post("/invoices/upload")
 async def upload_invoice_file(
     request: Request,
@@ -639,6 +703,29 @@ async def upload_invoice_file(
     contents = await file.read()
     file_path.write_bytes(contents)
 
+    base_url = str(request.base_url).rstrip("/")
+    file_url = f"{base_url}/uploads/{filename}"
+    return {"url": file_url}
+
+
+@admin_router.get("/invoices/{iid}/pdf")
+async def invoice_pdf(iid: str, user: dict = Depends(get_current_user)):
+    invoice = await db.invoices.find_one({"id": iid}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(404, "Invoice not found")
+    pdf_bytes = generate_invoice_pdf_bytes(invoice)
+    return StreamingResponse(BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"inline; filename=Invoice-{invoice['invoice_no']}.pdf"})
+
+
+@admin_router.post("/invoices/{iid}/publish")
+async def publish_invoice_pdf(iid: str, request: Request, user: dict = Depends(get_current_user)):
+    invoice = await db.invoices.find_one({"id": iid}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(404, "Invoice not found")
+    pdf_bytes = generate_invoice_pdf_bytes(invoice)
+    filename = f"{uuid.uuid4().hex}_{invoice['invoice_no']}.pdf"
+    file_path = UPLOADS_DIR / filename
+    file_path.write_bytes(pdf_bytes)
     base_url = str(request.base_url).rstrip("/")
     file_url = f"{base_url}/uploads/{filename}"
     return {"url": file_url}

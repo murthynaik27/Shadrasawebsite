@@ -371,21 +371,12 @@ function InvoiceViewDrawer({ invoice, onClose }) {
       const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       if (isMobile) {
-        try {
-          const pdfUrl = await uploadInvoicePdf(blob);
-          if (pdfUrl) {
-            window.location.href = pdfUrl;
-            toast.success("Invoice PDF opened in a new tab. Use browser save/print options.");
-            return;
-          }
-        } catch (uploadError) {
-          console.warn("Upload failed, falling back to direct PDF open", uploadError);
+        const pdfUrl = await getPublishedPdfUrl();
+        if (!pdfUrl) {
+          throw new Error("Unable to generate mobile PDF link.");
         }
-
-        const url = URL.createObjectURL(blob);
-        window.location.href = url;
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-        toast.success("Invoice PDF opened in a new tab. Use browser save/print options.");
+        window.location.href = pdfUrl;
+        toast.success("Invoice PDF opened. Use browser save/print options.");
         return;
       }
 
@@ -405,16 +396,9 @@ function InvoiceViewDrawer({ invoice, onClose }) {
     }
   };
 
-  const uploadInvoicePdf = async (blob) => {
-    const fileName = `Invoice-${invoice.invoice_no}.pdf`;
-    const file = new File([blob], fileName, { type: "application/pdf" });
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await apiClient.post("/admin/invoices/upload", formData, {
-      headers: {
-        ...authHeaders(),
-      },
+  const getPublishedPdfUrl = async () => {
+    const response = await apiClient.post(`/admin/invoices/${invoice.id}/publish`, null, {
+      headers: authHeaders(),
     });
     return response.data?.url;
   };
@@ -436,9 +420,9 @@ function InvoiceViewDrawer({ invoice, onClose }) {
 
       let pdfUrl = null;
       try {
-        pdfUrl = await uploadInvoicePdf(blob);
+        pdfUrl = await getPublishedPdfUrl();
       } catch (uploadError) {
-        console.warn("PDF upload failed, sharing text-only fallback.", uploadError);
+        console.warn("PDF publish failed, sharing text-only fallback.", uploadError);
       }
 
       const shareText = pdfUrl
@@ -474,14 +458,12 @@ function InvoiceViewDrawer({ invoice, onClose }) {
     }
 
     try {
-      const blob = await getInvoicePdfBlob();
-      const pdfUrl = await uploadInvoicePdf(blob);
-      if (pdfUrl) {
-        window.location.href = pdfUrl;
-        toast.success("Invoice opened in a new tab. Use browser print/save options.");
-        return;
+      const pdfUrl = await getPublishedPdfUrl();
+      if (!pdfUrl) {
+        throw new Error("Unable to generate print URL.");
       }
-      window.print();
+      window.location.href = pdfUrl;
+      toast.success("Invoice opened. Use browser print/save options.");
     } catch (error) {
       console.error(error);
       toast.error("Unable to prepare invoice for printing on mobile. Please download it first.");
