@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { Plus, Printer, Download, Search, X, ChevronLeft, Package, User, MapPin, Receipt, Trash2 } from "lucide-react";
 import { apiClient, LOGO_URL } from "../../lib/api";
 import { authHeaders, fmtDate, formatPrice } from "../../lib/admin";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export default function AdminInvoices() {
   const [invoices, setInvoices] = useState([]);
@@ -318,42 +320,133 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
 }
 
 function InvoiceViewDrawer({ invoice, onClose }) {
-  const handlePrint = () => {
-    window.print();
+  const invoiceRef = useRef(null);
+  const [isPdfGenerating, setIsPdfGenerating] = useState(false);
+
+  const getInvoicePdfBlob = async () => {
+    if (!invoiceRef.current) {
+      throw new Error("Invoice view is not available for PDF generation.");
+    }
+    setIsPdfGenerating(true);
+    try {
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        windowWidth: invoiceRef.current.scrollWidth,
+        windowHeight: invoiceRef.current.scrollHeight,
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const pdf = new jsPDF({ unit: "pt", format: "a4", compress: true });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+      let heightLeft = pdfHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "JPEG", 0, position, pageWidth, pdfHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > -0.1) {
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, pageWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+
+      return pdf.output("blob");
+    } finally {
+      setIsPdfGenerating(false);
+    }
   };
 
-  const shareWhatsApp = () => {
-    const text = `Invoice ${invoice.invoice_no}\nTotal: ${formatPrice(invoice.total)}\nStatus: ${invoice.payment_status}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+  const downloadInvoicePdf = async () => {
+    try {
+      const blob = await getInvoicePdfBlob();
+      const fileName = `Invoice-${invoice.invoice_no}.pdf`;
+      const file = new File([blob], fileName, { type: "application/pdf" });
+      const url = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Invoice PDF downloaded.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to generate invoice PDF. Please try again.");
+    }
+  };
+
+  const shareInvoicePdf = async () => {
+    try {
+      const blob = await getInvoicePdfBlob();
+      const file = new File([blob], `Invoice-${invoice.invoice_no}.pdf`, { type: "application/pdf" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Invoice ${invoice.invoice_no}`,
+          text: `Invoice ${invoice.invoice_no} from Shadrasa`,
+        });
+        return;
+      }
+
+      const shareText = `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)}. Please download the invoice PDF in your app.`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(whatsappUrl, "_blank");
+      toast.success("WhatsApp share opened. Attach the downloaded PDF if supported.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to share invoice. Please download the PDF and share it manually.");
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
     <>
       <div className="fixed inset-0 z-50 bg-black/40 flex justify-end print:hidden" onClick={(e) => e.target === e.currentTarget && onClose()}>
         <aside className="bg-white w-full max-w-xl h-full overflow-y-auto shadow-2xl flex flex-col">
-          <div className="sticky top-0 bg-white border-b border-[#6b3e1f]/10 px-6 py-4 flex items-center justify-between">
+          <div className="sticky top-0 bg-white border-b border-[#6b3e1f]/10 px-6 py-4 flex items-center justify-between gap-2">
             <button onClick={onClose} className="inline-flex items-center gap-2 text-[#6b3e1f] hover:text-[#0a331e] text-sm font-semibold">
               <ChevronLeft size={18} /> Back
             </button>
-            <div className="flex items-center gap-2">
-              <button onClick={shareWhatsApp} className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#6b3e1f]/20 text-xs font-semibold hover:bg-[#fdfbf7] text-green-700">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={downloadInvoicePdf}
+                disabled={isPdfGenerating}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#6b3e1f]/20 text-xs font-semibold hover:bg-[#fdfbf7] text-[#0f4d2e] disabled:opacity-50"
+              >
+                <Download size={14} /> Download PDF
+              </button>
+              <button
+                onClick={shareInvoicePdf}
+                disabled={isPdfGenerating}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#6b3e1f]/20 text-xs font-semibold hover:bg-[#fdfbf7] text-green-700 disabled:opacity-50"
+              >
                 WhatsApp
               </button>
-              <button onClick={handlePrint} className="flex items-center gap-1 bg-[#0f4d2e] text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#0a331e]">
+              <button onClick={handlePrint} className="inline-flex items-center gap-1 bg-[#0f4d2e] text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#0a331e]">
                 <Printer size={14} /> Print
               </button>
             </div>
           </div>
-          
+
           <div className="p-4 md:p-8 overflow-x-auto">
-            <div className="min-w-[600px] md:min-w-0">
+            <div className="min-w-[600px] md:min-w-0" ref={invoiceRef}>
               <PrintableInvoice invoice={invoice} />
             </div>
           </div>
         </aside>
       </div>
 
-      {/* Print View container - hidden on screen, shown on print via tailwind print utilities */}
       <div className="hidden print:block bg-white text-black print:absolute print:left-0 print:top-0 print:w-full print:m-0 print:p-0">
         <PrintableInvoice invoice={invoice} forPrint />
       </div>
@@ -367,7 +460,7 @@ function PrintableInvoice({ invoice, forPrint }) {
       <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-[#0f4d2e] pb-4 md:pb-6 mb-6 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-             <img src={LOGO_URL} alt="Logo" className="h-10 w-10" />
+             <img src={LOGO_URL} alt="Logo" className="h-10 w-10" crossOrigin="anonymous" />
              <h1 className="text-3xl font-bold text-[#0f4d2e] uppercase tracking-wider">Shadrasa</h1>
           </div>
           <p className="text-sm text-gray-600 w-48">Premium Homemade Pickles & Pure Natural Honey</p>
