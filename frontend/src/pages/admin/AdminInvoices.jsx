@@ -443,8 +443,23 @@ function InvoiceViewDrawer({ invoice, onClose }) {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (!isMobile) {
+      window.print();
+      return;
+    }
+
+    try {
+      const blob = await getInvoicePdfBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      toast.success("Invoice opened as PDF. Use your browser share/save menu to print or save.");
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to prepare invoice for printing on mobile. Please download it first.");
+    }
   };
 
   return (
