@@ -1,7 +1,15 @@
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 from pathlib import Path
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+if load_dotenv:
+    try:
+        load_dotenv(ROOT_DIR / '.env')
+    except Exception:
+        # ignore dotenv load failures in minimal environments
+        pass
 
 import os
 import asyncio
