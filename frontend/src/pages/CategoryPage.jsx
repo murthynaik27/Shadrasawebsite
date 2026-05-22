@@ -17,6 +17,7 @@ export default function CategoryPage() {
   const { content, categories, loading: siteLoading } = useSiteData();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [slowLoading, setSlowLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(null);
   const { add } = useCart();
@@ -46,6 +47,18 @@ export default function CategoryPage() {
     return () => { mounted = false; };
   }, [category, siteLoading]);
 
+  useEffect(() => {
+    let timer;
+    if (loading || siteLoading) {
+      timer = setTimeout(() => {
+        setSlowLoading(true);
+      }, 5000);
+    } else {
+      setSlowLoading(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading, siteLoading]);
+
   const enquire = (p) => {
     setActive(p);
     setOpen(true);
@@ -60,23 +73,13 @@ export default function CategoryPage() {
     toast.success(`${p.name} added to cart`);
   };
 
-  // Helper to render static stars based on rating logic or just fixed for design if no rating fields exist
   const renderStars = (rating) => {
     return Array.from({ length: 5 }).map((_, i) => (
       <Star key={i} size={10} className={i < Math.floor(rating) ? "fill-[#d4a017] text-[#d4a017]" : "fill-gray-200 text-gray-200"} />
     ));
   };
 
-  if (siteLoading || loading) {
-    return (
-      <div className="bg-[#fdfbf7] min-h-screen">
-        <Loader />
-        <Navbar />
-      </div>
-    );
-  }
-
-  if (!category) {
+  if (!siteLoading && !category) {
     return (
       <div className="bg-[#fdfbf7] min-h-screen flex flex-col">
         <Navbar />
@@ -100,7 +103,7 @@ export default function CategoryPage() {
               <ArrowLeft size={16} /> Home
             </Link>
             <h1 className="font-display text-4xl md:text-5xl font-semibold text-[#6b3e1f]">
-              {category.name}
+              {category ? category.name : "Loading..."}
             </h1>
           </div>
 
@@ -126,7 +129,22 @@ export default function CategoryPage() {
             </div>
           </div>
 
-          {products.length === 0 ? (
+          {(loading || siteLoading) ? (
+            <div className="flex flex-col items-center justify-center py-20 min-h-[40vh]">
+              <div className="w-12 h-12 border-4 border-[#0f4d2e]/20 border-t-[#0f4d2e] rounded-full animate-spin mb-6"></div>
+              {slowLoading && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-[#fff9e6] border border-[#d4a017]/30 px-6 py-4 rounded-2xl shadow-sm max-w-md text-center"
+                >
+                  <p className="text-[#6b3e1f] text-sm font-semibold">
+                    Slow internet connection detected. Products are taking longer to load...
+                  </p>
+                </motion.div>
+              )}
+            </div>
+          ) : products.length === 0 ? (
             <div className="text-center py-20 text-[#6b3e1f]">
               <p>No products available in this category yet.</p>
             </div>
