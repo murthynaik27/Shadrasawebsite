@@ -5,7 +5,7 @@ import { ChevronLeft, ShoppingBag, Truck, MessageCircle, Wallet, Banknote } from
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useCart } from "../lib/CartContext";
-import { apiClient, formatApiError } from "../lib/api";
+import { apiClient, formatApiError, getImageUrl } from "../lib/api";
 import { formatPrice } from "../lib/admin";
 import { useSiteData } from "../lib/siteData";
 import { buildWhatsappFromNumber } from "../lib/siteData";
@@ -182,7 +182,7 @@ export default function CheckoutPage() {
                 <ul className="space-y-3 mb-5 max-h-64 overflow-y-auto">
                   {items.map((i) => (
                     <li key={i.product_id} className="flex gap-3 items-center">
-                      <img src={i.image} alt={i.name} className="h-14 w-14 rounded-lg object-cover" />
+                      <img src={getImageUrl(i.image)} alt={i.name} className="h-14 w-14 rounded-lg object-cover" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-[#0a331e] line-clamp-1">
                           {i.name}

@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from "./ui/dialog";
 import { formatPrice } from "../lib/admin";
 import { ShoppingCart, ArrowRight, X, Award } from "lucide-react";
+import OptimizedImage from "./ui/OptimizedImage";
 
 export default function QuickViewModal({ open, onOpenChange, product, onAddToCart, onEnquire }) {
   if (!product) return null;
@@ -18,11 +19,12 @@ export default function QuickViewModal({ open, onOpenChange, product, onAddToCar
           {/* Image Section */}
           <div className="md:w-1/2 relative bg-white flex items-center justify-center p-8 aspect-square md:aspect-auto">
             {product.image ? (
-              <img 
+              <OptimizedImage 
                 src={product.image} 
+                blurData={product.blur_image}
                 alt={product.name} 
-                className="w-full h-full object-cover rounded-xl"
-                loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" 
+                containerClassName="absolute inset-0"
               />
             ) : (
               <div className="w-full h-full border border-dashed border-[#6b3e1f]/20 rounded-xl flex items-center justify-center text-[#6b3e1f]/50">

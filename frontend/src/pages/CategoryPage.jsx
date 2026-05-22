@@ -6,6 +6,7 @@ import { ShoppingCart, ShoppingBag, ArrowLeft, Star, StarHalf, Eye } from "lucid
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Loader from "../components/Loader";
+import OptimizedImage from "../components/ui/OptimizedImage";
 import { apiClient } from "../lib/api";
 import { useCart } from "../lib/CartContext";
 import { formatPrice } from "../lib/admin";
@@ -157,11 +158,12 @@ export default function CategoryPage() {
                     <div className="relative aspect-[4/5] overflow-hidden bg-[#fdfbf7] p-4 flex items-center justify-center">
                       {p.image ? (
                         <>
-                          <img
+                          <OptimizedImage
                             src={p.image}
+                            blurData={p.blur_image}
                             alt={p.name}
-                            loading="lazy"
                             className="w-full h-full object-cover rounded-xl transition-transform duration-700 ease-out group-hover:scale-110"
+                            containerClassName="absolute inset-0"
                           />
                           {/* Glassmorphism Hover Overlay */}
                           <div className="absolute inset-4 bg-[#0a331e]/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center rounded-xl">

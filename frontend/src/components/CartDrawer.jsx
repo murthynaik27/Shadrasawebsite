@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "../lib/CartContext";
 import { formatPrice } from "../lib/admin";
+import { getImageUrl } from "../lib/api";
 
 export default function CartDrawer() {
   const { items, open, setOpen, setQty, remove, subtotal } = useCart();
@@ -46,7 +47,7 @@ export default function CartDrawer() {
             <ul className="space-y-4">
               {items.map((i) => (
                 <li key={i.product_id} data-testid={`cart-item-${i.product_id}`} className="flex gap-3 bg-white rounded-2xl p-3 border border-[#6b3e1f]/10">
-                  <img src={i.image} alt={i.name} className="h-20 w-20 rounded-xl object-cover" />
+                  <img src={getImageUrl(i.image)} alt={i.name} className="h-20 w-20 rounded-xl object-cover" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-[#0a331e] text-sm line-clamp-2">{i.name}</p>
                     <p className="text-[#0f4d2e] font-semibold text-sm mt-1">
