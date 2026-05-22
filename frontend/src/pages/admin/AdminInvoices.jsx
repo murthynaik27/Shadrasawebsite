@@ -1,10 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { Plus, Printer, Download, Search, X, ChevronLeft, Package, User, MapPin, Receipt, Trash2 } from "lucide-react";
-import { apiClient, LOGO_URL } from "../../lib/api";
+import { apiClient, API, LOGO_URL } from "../../lib/api";
 import { authHeaders, fmtDate, formatPrice } from "../../lib/admin";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 export default function AdminInvoices() {
   const [invoices, setInvoices] = useState([]);
@@ -324,72 +322,14 @@ function InvoiceViewDrawer({ invoice, onClose }) {
   const pdfRef = useRef(null);
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
 
-  const getInvoicePdfBlob = async () => {
-    const target = pdfRef.current || invoiceRef.current;
-    if (!target) {
-      throw new Error("Invoice view is not available for PDF generation.");
-    }
-    setIsPdfGenerating(true);
-    try {
-      const canvas = await html2canvas(target, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        windowWidth: target.scrollWidth,
-        windowHeight: target.scrollHeight,
-      });
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      const pdf = new jsPDF({ unit: "pt", format: "a4", compress: true });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
-      let heightLeft = pdfHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, "JPEG", 0, position, pageWidth, pdfHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > -0.1) {
-        position -= pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, position, pageWidth, pdfHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output("blob");
-    } finally {
-      setIsPdfGenerating(false);
-    }
-  };
-
   const downloadInvoicePdf = async () => {
     try {
-      const blob = await getInvoicePdfBlob();
-      const fileName = `Invoice-${invoice.invoice_no}.pdf`;
-      const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      if (isMobile) {
-        const pdfUrl = await getPublishedPdfUrl();
-        if (!pdfUrl) {
-          throw new Error("Unable to generate mobile PDF link.");
-        }
-        window.location.href = pdfUrl;
-        toast.success("Invoice PDF opened. Use browser save/print options.");
-        return;
+      const pdfUrl = await getPublishedPdfUrl();
+      if (!pdfUrl) {
+        throw new Error("Unable to generate invoice PDF link.");
       }
-
-      const file = new File([blob], fileName, { type: "application/pdf" });
-      const url = URL.createObjectURL(file);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      toast.success("Invoice PDF downloaded.");
+      window.location.href = pdfUrl;
+      toast.success("Invoice PDF opened. Use browser save/print options.");
     } catch (error) {
       console.error(error);
       toast.error("Unable to generate invoice PDF. Please try again.");
@@ -397,43 +337,31 @@ function InvoiceViewDrawer({ invoice, onClose }) {
   };
 
   const getPublishedPdfUrl = async () => {
-    const response = await apiClient.post(`/admin/invoices/${invoice.id}/publish`, null, {
-      headers: authHeaders(),
-    });
-    return response.data?.url;
+    try {
+      const response = await apiClient.post(`/admin/invoices/${invoice.id}/publish`, null, {
+        headers: authHeaders(),
+      });
+      return response.data?.url;
+    } catch (error) {
+      console.warn("Publish endpoint failed, falling back to direct PDF URL", error);
+      return `${API}/admin/invoices/${invoice.id}/pdf`;
+    }
   };
 
   const shareInvoicePdf = async () => {
     try {
       const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const blob = await getInvoicePdfBlob();
-      const file = new File([blob], `Invoice-${invoice.invoice_no}.pdf`, { type: "application/pdf" });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `Invoice ${invoice.invoice_no}`,
-          text: `Invoice ${invoice.invoice_no} from Shadrasa`,
-        });
-        return;
+      const pdfUrl = await getPublishedPdfUrl();
+      if (!pdfUrl) {
+        throw new Error("Unable to generate sharable invoice link.");
       }
 
-      let pdfUrl = null;
-      try {
-        pdfUrl = await getPublishedPdfUrl();
-      } catch (uploadError) {
-        console.warn("PDF publish failed, sharing text-only fallback.", uploadError);
-      }
-
-      const shareText = pdfUrl
-        ? `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)}. Download the invoice here: ${pdfUrl}`
-        : `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)} from Shadrasa. Please request the PDF from the admin if needed.`;
-
+      const shareText = `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)}. Download the invoice here: ${pdfUrl}`;
       if (navigator.share) {
         await navigator.share({
           title: `Invoice ${invoice.invoice_no}`,
           text: shareText,
-          url: pdfUrl || undefined,
+          url: pdfUrl,
         });
         return;
       }
