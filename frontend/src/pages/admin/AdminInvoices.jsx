@@ -365,18 +365,21 @@ function InvoiceViewDrawer({ invoice, onClose }) {
   const downloadInvoicePdf = async () => {
     try {
       const blob = await getInvoicePdfBlob();
-      const fileName = `Invoice-${invoice.invoice_no}.pdf`;
-      const file = new File([blob], fileName, { type: "application/pdf" });
-      const url = URL.createObjectURL(file);
       const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       if (isMobile) {
-        window.open(url, "_blank");
-        toast.success("Invoice PDF opened in a new tab. Use browser share/save menu to save it.");
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        const pdfUrl = await uploadInvoicePdf(blob);
+        if (!pdfUrl) {
+          throw new Error("Unable to generate download URL.");
+        }
+        window.open(pdfUrl, "_blank");
+        toast.success("Invoice PDF opened in a new tab. Use browser save/print options.");
         return;
       }
 
+      const fileName = `Invoice-${invoice.invoice_no}.pdf`;
+      const file = new File([blob], fileName, { type: "application/pdf" });
+      const url = URL.createObjectURL(file);
       const link = document.createElement("a");
       link.href = url;
       link.download = fileName;
@@ -452,10 +455,12 @@ function InvoiceViewDrawer({ invoice, onClose }) {
 
     try {
       const blob = await getInvoicePdfBlob();
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
-      toast.success("Invoice opened as PDF. Use your browser share/save menu to print or save.");
-      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      const pdfUrl = await uploadInvoicePdf(blob);
+      if (!pdfUrl) {
+        throw new Error("Unable to generate print URL.");
+      }
+      window.open(pdfUrl, "_blank");
+      toast.success("Invoice opened in a new tab. Use browser print/save options.");
     } catch (error) {
       console.error(error);
       toast.error("Unable to prepare invoice for printing on mobile. Please download it first.");
