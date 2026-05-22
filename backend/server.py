@@ -657,10 +657,11 @@ async def public_invoice_pdf(iid: str):
     if not doc:
         raise HTTPException(404, "Invoice not found")
     pdf_bytes = generate_invoice_pdf_bytes(doc)
+    safe_name = doc.get("owner_name", "Client").replace(" ", "")
     return StreamingResponse(
         BytesIO(pdf_bytes),
         media_type="application/pdf",
-        headers={"Content-Disposition": f"inline; filename=Invoice-{doc['invoice_no']}.pdf"},
+        headers={"Content-Disposition": f"inline; filename=Shadrasa_Invoice_{safe_name}.pdf"},
     )
 
 
@@ -688,56 +689,181 @@ def generate_invoice_pdf_bytes(invoice: dict) -> bytes:
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, "Shadrasa Invoice", ln=True)
-    pdf.ln(4)
+    # 1. Header (Logo / Company Name left, INVOICE right)
+    pdf.set_font("Arial", "B", 24)
+    # Use text as logo for now since we don't have an image file
+    pdf.set_text_color(0, 51, 102) # Dark blue for logo
+    pdf.cell(100, 10, "SHADRASA", ln=False)
+    
+    pdf.set_font("Arial", "B", 28)
+    pdf.set_text_color(50, 50, 50)
+    pdf.cell(0, 10, "INVOICE", ln=True, align="R")
+    pdf.ln(5)
 
+    # Company Details (Left) and Invoice Details (Right)
     pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 6, f"Invoice #: {invoice.get('invoice_no', '')}", ln=True)
-    pdf.cell(0, 6, f"Date: {invoice.get('created_at', '')}", ln=True)
-    pdf.cell(0, 6, f"Status: {invoice.get('payment_status', '')}", ln=True)
-    pdf.ln(6)
-
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 7, "Bill To:", ln=True)
+    pdf.set_text_color(80, 80, 80)
+    
+    y_before = pdf.get_y()
+    
+    # Left side - Company details
+    pdf.cell(100, 5, "Business Type: Honey, Pickles, Bird Eye Chilli", ln=True)
+    pdf.cell(100, 5, "Phone: +91 73385 42117", ln=True)
+    pdf.cell(100, 5, "Email: shadrasa.india@gmail.com", ln=True)
+    pdf.cell(100, 5, "Address: Karnataka, India", ln=True)
+    
+    y_after_company = pdf.get_y()
+    
+    # Right side - Invoice Details
+    pdf.set_xy(110, y_before)
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(40, 5, "Invoice #:", ln=False)
     pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 6, invoice.get('shop_name', ''), ln=True)
-    pdf.cell(0, 6, invoice.get('owner_name', ''), ln=True)
-    pdf.multi_cell(0, 6, invoice.get('address', ''))
-    pdf.cell(0, 6, f"Phone: {invoice.get('phone', '')}", ln=True)
-    if invoice.get('gst_number'):
-        pdf.cell(0, 6, f"GSTIN: {invoice.get('gst_number')}", ln=True)
-    pdf.ln(8)
+    pdf.cell(0, 5, invoice.get('invoice_no', ''), ln=True)
+    
+    pdf.set_x(110)
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(40, 5, "Invoice Date:", ln=False)
+    pdf.set_font("Arial", "", 10)
+    date_str = invoice.get('created_at', '')[:10] if invoice.get('created_at') else ''
+    pdf.cell(0, 5, date_str, ln=True)
 
+    pdf.set_x(110)
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(40, 5, "Payment Status:", ln=False)
+    pdf.set_font("Arial", "", 10)
+    pdf.cell(0, 5, invoice.get('payment_status', ''), ln=True)
+
+    pdf.set_y(max(y_after_company, pdf.get_y()) + 15)
+
+    # 2. Bill To Section
     pdf.set_font("Arial", "B", 11)
-    pdf.cell(90, 7, "Item Description", border=1)
-    pdf.cell(20, 7, "Qty", border=1, align="C")
-    pdf.cell(35, 7, "Price", border=1, align="R")
-    pdf.cell(35, 7, "Amount", border=1, align="R")
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(100, 6, "Bill To:", ln=True)
+    pdf.set_font("Arial", "", 10)
+    pdf.set_text_color(80, 80, 80)
+    
+    owner_name = invoice.get('owner_name', '')
+    if owner_name:
+        pdf.cell(100, 5, owner_name, ln=True)
+    shop_name = invoice.get('shop_name', '')
+    if shop_name:
+        pdf.cell(100, 5, shop_name, ln=True)
+        
+    address = invoice.get('address', '')
+    if address:
+        x = pdf.get_x()
+        y = pdf.get_y()
+        pdf.multi_cell(100, 5, address)
+        pdf.set_xy(x, pdf.get_y())
+        
+    phone = invoice.get('phone', '')
+    if phone:
+        pdf.cell(100, 5, f"Phone: {phone}", ln=True)
+        
+    gst = invoice.get('gst_number', '')
+    if gst:
+        pdf.cell(100, 5, f"GSTIN: {gst}", ln=True)
+
+    pdf.ln(10)
+
+    # 3. Table Header
+    pdf.set_fill_color(100, 100, 100)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Arial", "B", 10)
+    
+    pdf.cell(15, 8, "Item", border=1, fill=True, align="C")
+    pdf.cell(85, 8, "Description", border=1, fill=True, align="L")
+    pdf.cell(20, 8, "Qty", border=1, fill=True, align="C")
+    pdf.cell(35, 8, "Unit Price", border=1, fill=True, align="R")
+    pdf.cell(35, 8, "Total", border=1, fill=True, align="R")
     pdf.ln()
 
+    # 4. Table Rows
+    pdf.set_text_color(0, 0, 0)
     pdf.set_font("Arial", "", 10)
-    for item in invoice.get('items', []):
-        pdf.cell(90, 6, str(item.get('name', '')), border=1)
-        pdf.cell(20, 6, str(item.get('quantity', '')), border=1, align="C")
-        pdf.cell(35, 6, f"Rs. {item.get('price', 0):.2f}", border=1, align="R")
-        pdf.cell(35, 6, f"Rs. {item.get('line_total', 0):.2f}", border=1, align="R")
+    
+    items = invoice.get('items', [])
+    idx = 0
+    for idx, item in enumerate(items, 1):
+        pdf.cell(15, 8, str(idx), border=1, align="C")
+        pdf.cell(85, 8, str(item.get('name', '')), border=1, align="L")
+        pdf.cell(20, 8, str(item.get('quantity', '')), border=1, align="C")
+        pdf.cell(35, 8, f"Rs. {item.get('price', 0):.2f}", border=1, align="R")
+        pdf.cell(35, 8, f"Rs. {item.get('line_total', 0):.2f}", border=1, align="R")
         pdf.ln()
 
-    pdf.ln(4)
-    pdf.cell(0, 6, f"Subtotal: Rs. {invoice.get('subtotal', 0):.2f}", ln=True, align="R")
-    if invoice.get('discount', 0):
-        pdf.cell(0, 6, f"Discount: -Rs. {invoice.get('discount', 0):.2f}", ln=True, align="R")
-    if invoice.get('tax_amount', 0):
-        pdf.cell(0, 6, f"Tax ({invoice.get('tax_rate', 0)}%): +Rs. {invoice.get('tax_amount', 0):.2f}", ln=True, align="R")
-    pdf.cell(0, 6, f"Total: Rs. {invoice.get('total', 0):.2f}", ln=True, align="R")
+    # Empty rows to fill space
+    while idx < 5:
+        idx += 1
+        pdf.cell(15, 8, "", border=1)
+        pdf.cell(85, 8, "", border=1)
+        pdf.cell(20, 8, "", border=1)
+        pdf.cell(35, 8, "", border=1)
+        pdf.cell(35, 8, "", border=1)
+        pdf.ln()
 
+    pdf.ln(5)
+
+    # 5. Totals Section (Bottom Right)
+    y_before_totals = pdf.get_y()
+    
+    pdf.set_x(120)
+    pdf.set_font("Arial", "", 10)
+    pdf.cell(35, 7, "Invoice Subtotal", border=1, align="R")
+    pdf.cell(35, 7, f"Rs. {invoice.get('subtotal', 0):.2f}", border=1, align="R")
+    pdf.ln()
+    
+    tax_rate = invoice.get('tax_rate', 0)
+    if tax_rate > 0:
+        pdf.set_x(120)
+        pdf.cell(35, 7, f"Tax Rate", border=1, align="R")
+        pdf.cell(35, 7, f"{tax_rate}%", border=1, align="R")
+        pdf.ln()
+        
+        pdf.set_x(120)
+        pdf.cell(35, 7, "Sales Tax", border=1, align="R")
+        pdf.cell(35, 7, f"Rs. {invoice.get('tax_amount', 0):.2f}", border=1, align="R")
+        pdf.ln()
+        
+    discount = invoice.get('discount', 0)
+    if discount > 0:
+        pdf.set_x(120)
+        pdf.cell(35, 7, "Discount", border=1, align="R")
+        pdf.cell(35, 7, f"-Rs. {discount:.2f}", border=1, align="R")
+        pdf.ln()
+
+    pdf.set_x(120)
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(35, 8, "TOTAL", border=1, align="R")
+    pdf.cell(35, 8, f"Rs. {invoice.get('total', 0):.2f}", border=1, align="R")
+    pdf.ln()
+    
+    y_after_totals = pdf.get_y()
+
+    # 6. Notes / Terms (Bottom Left)
+    pdf.set_xy(10, y_before_totals)
     if invoice.get('notes'):
-        pdf.ln(8)
-        pdf.set_font("Arial", "B", 11)
-        pdf.cell(0, 6, "Notes / Terms:", ln=True)
-        pdf.set_font("Arial", "", 10)
-        pdf.multi_cell(0, 6, invoice.get('notes', ''))
+        pdf.set_font("Arial", "B", 10)
+        pdf.cell(100, 5, "Notes / Terms:", ln=True)
+        pdf.set_font("Arial", "", 9)
+        pdf.set_text_color(80, 80, 80)
+        pdf.multi_cell(100, 5, invoice.get('notes', ''))
+    
+    # Move past totals
+    pdf.set_y(max(pdf.get_y(), y_after_totals) + 15)
+    
+    # 7. Footer / Signature
+    pdf.set_y(-40)
+    pdf.set_font("Arial", "", 10)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 5, "_______________________", ln=True, align="R")
+    pdf.cell(0, 5, "Authorized Signature    ", ln=True, align="R")
+    
+    pdf.set_y(-20)
+    pdf.set_font("Arial", "I", 9)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 5, "Thank you for your business!", ln=True, align="C")
 
     output = BytesIO()
     output.write(pdf.output(dest='S').encode('latin1'))
@@ -771,7 +897,8 @@ async def invoice_pdf(iid: str, user: dict = Depends(get_current_user)):
     if not invoice:
         raise HTTPException(404, "Invoice not found")
     pdf_bytes = generate_invoice_pdf_bytes(invoice)
-    return StreamingResponse(BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"inline; filename=Invoice-{invoice['invoice_no']}.pdf"})
+    safe_name = invoice.get("owner_name", "Client").replace(" ", "")
+    return StreamingResponse(BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"inline; filename=Shadrasa_Invoice_{safe_name}.pdf"})
 
 
 @admin_router.post("/invoices/{iid}/publish")
@@ -780,7 +907,8 @@ async def publish_invoice_pdf(iid: str, request: Request, user: dict = Depends(g
     if not invoice:
         raise HTTPException(404, "Invoice not found")
     pdf_bytes = generate_invoice_pdf_bytes(invoice)
-    filename = f"{uuid.uuid4().hex}_{invoice['invoice_no']}.pdf"
+    safe_name = invoice.get("owner_name", "Client").replace(" ", "")
+    filename = f"{uuid.uuid4().hex}_Shadrasa_Invoice_{safe_name}.pdf"
     file_path = UPLOADS_DIR / filename
     file_path.write_bytes(pdf_bytes)
     base_url = str(request.base_url).rstrip("/")
