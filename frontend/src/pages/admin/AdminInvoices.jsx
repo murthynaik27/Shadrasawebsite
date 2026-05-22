@@ -368,6 +368,15 @@ function InvoiceViewDrawer({ invoice, onClose }) {
       const fileName = `Invoice-${invoice.invoice_no}.pdf`;
       const file = new File([blob], fileName, { type: "application/pdf" });
       const url = URL.createObjectURL(file);
+      const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        window.open(url, "_blank");
+        toast.success("Invoice PDF opened in a new tab. Use browser share/save menu to save it.");
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        return;
+      }
+
       const link = document.createElement("a");
       link.href = url;
       link.download = fileName;
