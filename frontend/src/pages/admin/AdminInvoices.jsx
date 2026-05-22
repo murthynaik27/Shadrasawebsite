@@ -321,20 +321,22 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
 
 function InvoiceViewDrawer({ invoice, onClose }) {
   const invoiceRef = useRef(null);
+  const pdfRef = useRef(null);
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
 
   const getInvoicePdfBlob = async () => {
-    if (!invoiceRef.current) {
+    const target = pdfRef.current || invoiceRef.current;
+    if (!target) {
       throw new Error("Invoice view is not available for PDF generation.");
     }
     setIsPdfGenerating(true);
     try {
-      const canvas = await html2canvas(invoiceRef.current, {
+      const canvas = await html2canvas(target, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
-        windowWidth: invoiceRef.current.scrollWidth,
-        windowHeight: invoiceRef.current.scrollHeight,
+        windowWidth: target.scrollWidth,
+        windowHeight: target.scrollHeight,
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
@@ -365,19 +367,28 @@ function InvoiceViewDrawer({ invoice, onClose }) {
   const downloadInvoicePdf = async () => {
     try {
       const blob = await getInvoicePdfBlob();
+      const fileName = `Invoice-${invoice.invoice_no}.pdf`;
       const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       if (isMobile) {
-        const pdfUrl = await uploadInvoicePdf(blob);
-        if (!pdfUrl) {
-          throw new Error("Unable to generate download URL.");
+        try {
+          const pdfUrl = await uploadInvoicePdf(blob);
+          if (pdfUrl) {
+            window.location.href = pdfUrl;
+            toast.success("Invoice PDF opened in a new tab. Use browser save/print options.");
+            return;
+          }
+        } catch (uploadError) {
+          console.warn("Upload failed, falling back to direct PDF open", uploadError);
         }
-        window.open(pdfUrl, "_blank");
+
+        const url = URL.createObjectURL(blob);
+        window.location.href = url;
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
         toast.success("Invoice PDF opened in a new tab. Use browser save/print options.");
         return;
       }
 
-      const fileName = `Invoice-${invoice.invoice_no}.pdf`;
       const file = new File([blob], fileName, { type: "application/pdf" });
       const url = URL.createObjectURL(file);
       const link = document.createElement("a");
@@ -423,17 +434,22 @@ function InvoiceViewDrawer({ invoice, onClose }) {
         return;
       }
 
-      const pdfUrl = await uploadInvoicePdf(blob);
-      if (!pdfUrl) {
-        throw new Error("Unable to generate sharable invoice link.");
+      let pdfUrl = null;
+      try {
+        pdfUrl = await uploadInvoicePdf(blob);
+      } catch (uploadError) {
+        console.warn("PDF upload failed, sharing text-only fallback.", uploadError);
       }
 
-      const shareText = `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)}. Download the invoice here: ${pdfUrl}`;
+      const shareText = pdfUrl
+        ? `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)}. Download the invoice here: ${pdfUrl}`
+        : `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)} from Shadrasa. Please request the PDF from the admin if needed.`;
+
       if (navigator.share) {
         await navigator.share({
           title: `Invoice ${invoice.invoice_no}`,
           text: shareText,
-          url: pdfUrl,
+          url: pdfUrl || undefined,
         });
         return;
       }
@@ -442,12 +458,7 @@ function InvoiceViewDrawer({ invoice, onClose }) {
       const whatsappAppUrl = `whatsapp://send?text=${whatsappText}`;
       const whatsappWebUrl = `https://api.whatsapp.com/send?text=${whatsappText}`;
       const whatsappUrl = isMobile ? whatsappAppUrl : whatsappWebUrl;
-
-      try {
-        window.location.href = whatsappUrl;
-      } catch {
-        window.location.href = whatsappWebUrl;
-      }
+      window.location.href = whatsappUrl;
       toast.success("WhatsApp opened. If the app does not open, use the browser fallback.");
     } catch (error) {
       console.error(error);
@@ -465,11 +476,12 @@ function InvoiceViewDrawer({ invoice, onClose }) {
     try {
       const blob = await getInvoicePdfBlob();
       const pdfUrl = await uploadInvoicePdf(blob);
-      if (!pdfUrl) {
-        throw new Error("Unable to generate print URL.");
+      if (pdfUrl) {
+        window.location.href = pdfUrl;
+        toast.success("Invoice opened in a new tab. Use browser print/save options.");
+        return;
       }
-      window.open(pdfUrl, "_blank");
-      toast.success("Invoice opened in a new tab. Use browser print/save options.");
+      window.print();
     } catch (error) {
       console.error(error);
       toast.error("Unable to prepare invoice for printing on mobile. Please download it first.");
@@ -513,6 +525,10 @@ function InvoiceViewDrawer({ invoice, onClose }) {
         </aside>
       </div>
 
+      <div ref={pdfRef} className="fixed left-[-9999px] top-0 opacity-0 pointer-events-none">
+        <PrintableInvoice invoice={invoice} forPdf />
+      </div>
+
       <div className="hidden print:block bg-white text-black print:absolute print:left-0 print:top-0 print:w-full print:m-0 print:p-0">
         <PrintableInvoice invoice={invoice} forPrint />
       </div>
@@ -520,14 +536,20 @@ function InvoiceViewDrawer({ invoice, onClose }) {
   );
 }
 
-function PrintableInvoice({ invoice, forPrint }) {
+function PrintableInvoice({ invoice, forPrint, forPdf }) {
   return (
     <div className={`bg-white text-black ${forPrint ? '' : 'border border-gray-200 shadow-sm p-4 md:p-8 rounded-lg'}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-[#0f4d2e] pb-4 md:pb-6 mb-6 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-             <img src={LOGO_URL} alt="Logo" className="h-10 w-10" crossOrigin="anonymous" />
-             <h1 className="text-3xl font-bold text-[#0f4d2e] uppercase tracking-wider">Shadrasa</h1>
+            {forPdf ? (
+              <div className="text-2xl font-bold text-[#0f4d2e] uppercase tracking-wider">Shadrasa</div>
+            ) : (
+              <>
+                <img src={LOGO_URL} alt="Logo" className="h-10 w-10" />
+                <h1 className="text-3xl font-bold text-[#0f4d2e] uppercase tracking-wider">Shadrasa</h1>
+              </>
+            )}
           </div>
           <p className="text-sm text-gray-600 w-48">Premium Homemade Pickles & Pure Natural Honey</p>
         </div>
