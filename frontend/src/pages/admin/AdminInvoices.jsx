@@ -382,6 +382,20 @@ function InvoiceViewDrawer({ invoice, onClose }) {
     }
   };
 
+  const uploadInvoicePdf = async (blob) => {
+    const fileName = `Invoice-${invoice.invoice_no}.pdf`;
+    const file = new File([blob], fileName, { type: "application/pdf" });
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await apiClient.post("/admin/invoices/upload", formData, {
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    return response.data?.url;
+  };
+
   const shareInvoicePdf = async () => {
     try {
       const blob = await getInvoicePdfBlob();
@@ -396,10 +410,24 @@ function InvoiceViewDrawer({ invoice, onClose }) {
         return;
       }
 
-      const shareText = `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)}. Please download the invoice PDF in your app.`;
+      const pdfUrl = await uploadInvoicePdf(blob);
+      if (!pdfUrl) {
+        throw new Error("Unable to generate sharable invoice link.");
+      }
+
+      const shareText = `Invoice ${invoice.invoice_no} Total: ${formatPrice(invoice.total)}. Download the invoice here: ${pdfUrl}`;
+      if (navigator.share) {
+        await navigator.share({
+          title: `Invoice ${invoice.invoice_no}`,
+          text: shareText,
+          url: pdfUrl,
+        });
+        return;
+      }
+
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-      window.open(whatsappUrl, "_blank");
-      toast.success("WhatsApp share opened. Attach the downloaded PDF if supported.");
+      window.location.href = whatsappUrl;
+      toast.success("WhatsApp opened with invoice download link.");
     } catch (error) {
       console.error(error);
       toast.error("Unable to share invoice. Please download the PDF and share it manually.");

@@ -14,7 +14,8 @@ import certifi
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 
-from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, File, UploadFile
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
@@ -26,6 +27,8 @@ db_name = os.environ.get('DB_NAME', 'shadrasa_db')
 
 client = None
 db = None
+UPLOADS_DIR = ROOT_DIR / "uploads"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 if mongo_url:
     client = AsyncIOMotorClient(mongo_url, tls=True, tlsCAFile=certifi.where())
@@ -620,6 +623,27 @@ async def create_invoice(data: InvoiceIn, user: dict = Depends(get_current_user)
     return doc
 
 
+@admin_router.post("/invoices/upload")
+async def upload_invoice_file(
+    request: Request,
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user)
+):
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Only PDF uploads are supported.")
+
+    safe_name = file.filename.split("/")[-1].split("\\")[-1]
+    filename = f"{uuid.uuid4().hex}_{safe_name}"
+    file_path = UPLOADS_DIR / filename
+
+    contents = await file.read()
+    file_path.write_bytes(contents)
+
+    base_url = str(request.base_url).rstrip("/")
+    file_url = f"{base_url}/uploads/{filename}"
+    return {"url": file_url}
+
+
 @admin_router.put("/invoices/{iid}")
 async def update_invoice(iid: str, data: InvoiceIn, user: dict = Depends(get_current_user)):
     payload = data.model_dump()
@@ -1059,6 +1083,7 @@ async def shutdown_db_client():
 # -------- Mount --------
 app.include_router(api_router)
 app.include_router(admin_router)
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
