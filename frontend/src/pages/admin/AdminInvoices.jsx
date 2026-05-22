@@ -410,6 +410,7 @@ function InvoiceViewDrawer({ invoice, onClose }) {
 
   const shareInvoicePdf = async () => {
     try {
+      const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       const blob = await getInvoicePdfBlob();
       const file = new File([blob], `Invoice-${invoice.invoice_no}.pdf`, { type: "application/pdf" });
 
@@ -437,9 +438,17 @@ function InvoiceViewDrawer({ invoice, onClose }) {
         return;
       }
 
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-      window.location.href = whatsappUrl;
-      toast.success("WhatsApp opened with invoice download link.");
+      const whatsappText = encodeURIComponent(shareText);
+      const whatsappAppUrl = `whatsapp://send?text=${whatsappText}`;
+      const whatsappWebUrl = `https://api.whatsapp.com/send?text=${whatsappText}`;
+      const whatsappUrl = isMobile ? whatsappAppUrl : whatsappWebUrl;
+
+      try {
+        window.location.href = whatsappUrl;
+      } catch {
+        window.location.href = whatsappWebUrl;
+      }
+      toast.success("WhatsApp opened. If the app does not open, use the browser fallback.");
     } catch (error) {
       console.error(error);
       toast.error("Unable to share invoice. Please download the PDF and share it manually.");
