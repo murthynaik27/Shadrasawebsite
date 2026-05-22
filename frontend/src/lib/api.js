@@ -1,13 +1,18 @@
 import axios from "axios";
 
-export const BACKEND_URL = process.env.NODE_ENV === "development" 
+export const BACKEND_URL = import.meta.env?.MODE === "development" || import.meta.env?.DEV
   ? "http://127.0.0.1:8000" 
-  : "https://shadrasawebsite.onrender.com";
-export const API = `${BACKEND_URL}/api`;
+  : (import.meta.env?.VITE_API_URL || "http://127.0.0.1:8000");
+
+// Also strip trailing slash if present
+const cleanBackendUrl = BACKEND_URL.replace(/\/$/, "");
+
+export const API = `${cleanBackendUrl}/api`;
 
 export const getImageUrl = (url) => {
   if (!url) return "";
-  if (url.startsWith("/uploads")) return `${BACKEND_URL}${url}`;
+  if (url.startsWith("http")) return url;
+  if (url.startsWith("/uploads")) return `${cleanBackendUrl}${url}`;
   return url;
 };
 

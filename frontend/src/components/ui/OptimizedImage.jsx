@@ -51,17 +51,17 @@ export default function OptimizedImage({
 
       {/* 4. Top Layer: The Actual Image */}
       {src && !hasError && (
-        <motion.img
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isLoaded ? 1 : 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+        <img
           src={getImageUrl(src)}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}
           onLoad={() => setIsLoaded(true)}
-          onError={() => setHasError(true)}
-          className={`relative z-20 w-full h-full object-cover ${className}`}
+          onError={(e) => {
+            console.error("Image failed to load:", e.target.src);
+            setHasError(true);
+          }}
+          className={`relative z-20 w-full h-full object-cover transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"} ${className}`}
         />
       )}
     </div>
