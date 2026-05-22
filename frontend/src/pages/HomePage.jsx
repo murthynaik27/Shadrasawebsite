@@ -23,7 +23,7 @@ export default function HomePage() {
       <Navbar />
       <main>
         <Hero content={site.content} banners={site.banners} />
-        <Categories categories={site.categories} />
+        <Categories categories={site.categories} loading={site.loading} />
         <About content={site.content} />
         <WhyUs />
         <Gallery gallery={site.gallery} />
