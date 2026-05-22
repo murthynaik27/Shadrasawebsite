@@ -37,6 +37,7 @@ try:
     from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, File, UploadFile
     from fastapi.staticfiles import StaticFiles
     from fastapi.responses import StreamingResponse
+    from fastapi.middleware.gzip import GZipMiddleware
     from starlette.middleware.cors import CORSMiddleware
     from pymongo import MongoClient
     from pydantic import BaseModel, Field, EmailStr
@@ -68,6 +69,7 @@ else:
 
 # -------- App --------
 app = FastAPI(title="Shadrasa API")
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 api_router = APIRouter(prefix="/api")
 admin_router = APIRouter(prefix="/api/admin")
 
@@ -170,6 +172,7 @@ class CategoryIn(BaseModel):
     slug: Optional[str] = Field(None, max_length=80)
     description: Optional[str] = Field(None, max_length=500)
     image: Optional[str] = None
+    blur_image: Optional[str] = None
     is_active: bool = True
     sort_order: int = 0
 
@@ -187,6 +190,7 @@ class ProductIn(BaseModel):
     weight: Optional[float] = None
     unit: Optional[str] = None
     image: Optional[str] = None  # base64 data URL
+    blur_image: Optional[str] = None
     is_featured: bool = False
     is_active: bool = True
     premium_badge: Optional[str] = None
@@ -197,6 +201,7 @@ class BannerIn(BaseModel):
     title: Optional[str] = None
     subtitle: Optional[str] = None
     image: Optional[str] = None  # base64 data URL
+    blur_image: Optional[str] = None
     cta_label: Optional[str] = None
     cta_href: Optional[str] = None
     is_active: bool = True
@@ -207,6 +212,7 @@ class GalleryIn(BaseModel):
     title: Optional[str] = None
     type: str = Field(..., max_length=20)  # "image" or "video"
     url: str
+    blur_image: Optional[str] = None
     category: Optional[str] = None
     is_active: bool = True
     sort_order: int = 0
@@ -315,6 +321,48 @@ class ContentIn(BaseModel):
     # Footer
     footer_tagline: Optional[str] = None
 
+
+import base64
+from PIL import Image
+
+def process_and_save_image(base64_str: str, prefix: str = "img") -> dict:
+    if not base64_str or not base64_str.startswith("data:image"):
+        return {"url": base64_str, "blur": None}
+    
+    try:
+        header, encoded = base64_str.split(",", 1)
+        image_data = base64.b64decode(encoded)
+        img = Image.open(BytesIO(image_data))
+        
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+            
+        img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+        
+        file_id = f"{prefix}_{uuid.uuid4().hex[:8]}"
+        filename = f"{file_id}.webp"
+        filepath = UPLOADS_DIR / "images" / filename
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Save as WebP for optimal size and compatibility
+        img.save(filepath, format="WEBP", quality=80, method=6)
+        
+        # Generate Blur Data URI
+        blur_img = img.copy()
+        blur_img.thumbnail((20, 20), Image.Resampling.LANCZOS)
+        buffered = BytesIO()
+        blur_img.save(buffered, format="JPEG", quality=40)
+        blur_base64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        blur_data_uri = f"data:image/jpeg;base64,{blur_base64}"
+        
+        # Add base URL to path
+        base_url = os.environ.get("BASE_URL", "").rstrip("/")
+        file_url = f"{base_url}/uploads/images/{filename}"
+        
+        return {"url": file_url, "blur": blur_data_uri}
+    except Exception as e:
+        logger.error(f"Image processing error: {e}")
+        return {"url": base64_str, "blur": None}
 
 # -------- Public Routes --------
 @api_router.get("/")
@@ -511,13 +559,15 @@ async def site_categories():
 
 
 @api_router.get("/site/products")
-async def site_products(category_id: Optional[str] = None, featured: Optional[bool] = None):
+async def site_products(category_id: Optional[str] = None, featured: Optional[bool] = None, page: int = 1, limit: int = 500):
     q: dict = {"is_active": True}
     if category_id:
         q["category_id"] = category_id
     if featured is True:
         q["is_featured"] = True
-    items = list(db.products.find(q, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).limit(500))
+    
+    skip = (page - 1) * limit
+    items = list(db.products.find(q, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).skip(skip).limit(limit))
     return items
 
 
@@ -980,9 +1030,16 @@ async def list_products(user: dict = Depends(get_current_user)):
 
 @admin_router.post("/products", status_code=201)
 async def create_product(data: ProductIn, user: dict = Depends(get_current_user)):
+    payload = data.model_dump()
+    
+    if payload.get("image"):
+        processed = process_and_save_image(payload["image"], prefix="prod")
+        payload["image"] = processed["url"]
+        payload["blur_image"] = processed["blur"]
+        
     doc = {
         "id": str(uuid.uuid4()),
-        **data.model_dump(),
+        **payload,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -999,6 +1056,12 @@ async def create_product(data: ProductIn, user: dict = Depends(get_current_user)
 @admin_router.put("/products/{pid}")
 async def update_product(pid: str, data: ProductIn, user: dict = Depends(get_current_user)):
     payload = data.model_dump()
+    
+    if payload.get("image") and payload["image"].startswith("data:image"):
+        processed = process_and_save_image(payload["image"], prefix="prod")
+        payload["image"] = processed["url"]
+        payload["blur_image"] = processed["blur"]
+        
     payload["updated_at"] = datetime.now(timezone.utc).isoformat()
     if payload.get("category_id"):
         cat = db.categories.find_one({"id": payload["category_id"]}, {"_id": 0})

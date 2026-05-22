@@ -5,6 +5,7 @@ import { Award, ArrowRight, ShoppingBag, ShoppingCart, Eye } from "lucide-react"
 import EnquiryDialog from "./EnquiryDialog";
 import { formatPrice } from "../lib/admin";
 import { useCart } from "../lib/CartContext";
+import OptimizedImage from "./ui/OptimizedImage";
 
 export default function Products({ products = [] }) {
   const [open, setOpen] = useState(false);
@@ -73,11 +74,13 @@ export default function Products({ products = [] }) {
                 onClick={() => handleProductClick(p)}
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
+                  <OptimizedImage
                     src={p.image}
+                    blurData={p.blur_image}
                     alt={p.name}
-                    loading="lazy"
+                    priority={i < 4}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                    containerClassName="absolute inset-0"
                   />
                   {/* Glassmorphism Hover Overlay */}
                   <div className="absolute inset-0 bg-[#0a331e]/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">

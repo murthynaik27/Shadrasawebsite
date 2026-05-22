@@ -9,3 +9,5 @@ email-validator
 certifi
 fpdf
 python-multipart
+Pillow
+pillow-avif-plugin
