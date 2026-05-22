@@ -1390,7 +1390,7 @@ async def seed_cms():
 @app.on_event("startup")
 async def startup():
     if db is None:
-        print("❌ DB not connected, skipping startup tasks")
+        print("DB not connected, skipping startup tasks")
         return
     db.users.create_index("email", unique=True)
     db.users.create_index("id", unique=True)
