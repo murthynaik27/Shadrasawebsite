@@ -10,21 +10,32 @@ import uuid
 import bcrypt
 import jwt
 import resend
+import sys
+import traceback
+import asyncio
+import logging
+import uuid
+import bcrypt
+import jwt
+import resend
 import certifi
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
-from io import BytesIO
 
-from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, File, UploadFile
-from fastapi.responses import StreamingResponse
-from fastapi.staticfiles import StaticFiles
-from fpdf import FPDF
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field, EmailStr
+# Configure basic logging early so any import-time error is logged
+logging.basicConfig(level=logging.INFO)
 
-
-# -------- MongoDB --------
+try:
+    from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, File, UploadFile
+    from fastapi.staticfiles import StaticFiles
+    from starlette.middleware.cors import CORSMiddleware
+    from motor.motor_asyncio import AsyncIOMotorClient
+    from pydantic import BaseModel, Field, EmailStr
+except Exception:
+    logging.exception("Failed importing FastAPI or other runtime dependencies during startup")
+    traceback.print_exc()
+    # exit so Render shows a clear error instead of a silent crash
+    sys.exit(1)
 mongo_url = os.environ.get('MONGO_URL')
 db_name = os.environ.get('DB_NAME', 'shadrasa_db')
 
