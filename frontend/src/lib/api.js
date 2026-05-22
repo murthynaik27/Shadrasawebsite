@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const BACKEND_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+export const BACKEND_URL = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:8000`;
 
 // Also strip trailing slash if present
 const cleanBackendUrl = BACKEND_URL.replace(/\/$/, "");
