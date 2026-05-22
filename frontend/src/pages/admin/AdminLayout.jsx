@@ -39,6 +39,8 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.REACT_APP_SITE_URL || "https://shadrasawebsite-szwt.vercel.app/";
 
   useEffect(() => {
     apiClient
@@ -103,9 +105,14 @@ export default function AdminLayout() {
         </nav>
         <div className="p-4 border-t border-[#6b3e1f]/10 space-y-2">
           <a
-            href={process.env.PUBLIC_URL || "/Shadrasawebsite"}
+            href={siteUrl}
+            onClick={(e) => {
+              // ensure external link opens in a new tab and avoid SPA routing
+              e.preventDefault();
+              window.open(siteUrl, "_blank", "noopener,noreferrer");
+            }}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-[#6b3e1f] hover:bg-[#fdfbf7] text-sm font-medium"
           >
             <Globe size={14} /> View website
