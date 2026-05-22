@@ -12,6 +12,9 @@ export function SiteDataProvider({ children }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const normalizeArray = (value) => (Array.isArray(value) ? value : []);
+  const normalizeObject = (value) => (value && typeof value === "object" && !Array.isArray(value) ? value : {});
+
   const fetchAll = useCallback(async () => {
     try {
       const [c, p, b, cat, g, r] = await Promise.all([
@@ -22,12 +25,12 @@ export function SiteDataProvider({ children }) {
         apiClient.get("/site/gallery"),
         apiClient.get("/site/reviews"),
       ]);
-      setContent(c.data || {});
-      setProducts(p.data || []);
-      setBanners(b.data || []);
-      setCategories(cat.data || []);
-      setGallery(g.data || []);
-      setReviews(r.data || []);
+      setContent(normalizeObject(c.data));
+      setProducts(normalizeArray(p.data));
+      setBanners(normalizeArray(b.data));
+      setCategories(normalizeArray(cat.data));
+      setGallery(normalizeArray(g.data));
+      setReviews(normalizeArray(r.data));
     } catch (err) {
       console.error("site data load failed", err);
     } finally {

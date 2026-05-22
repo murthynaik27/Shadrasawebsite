@@ -1,8 +1,5 @@
 {
   "buildCommand": "CI=false npm run build",
   "outputDirectory": "build",
-  "installCommand": "npm install",
-  "env": {
-    "REACT_APP_API_URL": "https://shadrasawebsite-szwt.vercel.app"
-  }
+  "installCommand": "npm install"
 }

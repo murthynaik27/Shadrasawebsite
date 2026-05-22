@@ -3,15 +3,16 @@ import axios from "axios";
 const isBrowser = typeof window !== "undefined";
 const inferredBackendUrl = isBrowser
   ? (() => {
-      const { protocol, hostname, port } = window.location;
-      if (hostname === "localhost" || hostname === "127.0.0.1" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+      const { protocol, hostname } = window.location;
+      const localHostMatch = /^(localhost|127\.0\.0\.1|10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1]))/.test(hostname);
+      if (localHostMatch) {
         return `${protocol}//${hostname}:8000`;
       }
-      return `${protocol}//${hostname}${port ? `:${port}` : ""}`;
+      return null;
     })()
-  : "http://127.0.0.1:8000";
+  : null;
 
-export const BACKEND_URL = process.env.REACT_APP_API_URL || inferredBackendUrl;
+export const BACKEND_URL = process.env.REACT_APP_API_URL || inferredBackendUrl || "";
 
 // Also strip trailing slash if present
 const cleanBackendUrl = BACKEND_URL.replace(/\/$/, "");
