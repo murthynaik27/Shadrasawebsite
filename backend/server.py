@@ -132,7 +132,7 @@ async def get_current_user(request: Request) -> dict:
         payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
         if payload.get("type") != "access":
             raise HTTPException(status_code=401, detail="Invalid token type")
-        user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
+        user = db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         return user
@@ -330,7 +330,7 @@ async def health():
             info["status"] = "degraded"
         else:
             # ping the database to ensure connectivity
-            await db.command("ping")
+            db.command("ping")
             info["db"] = "ok"
     except Exception as e:
         info["db"] = f"error: {str(e)}"
@@ -341,7 +341,7 @@ async def health():
 @api_router.post("/auth/login")
 async def login(data: LoginRequest, response: Response):
     email = data.email.lower().strip()
-    user = await db.users.find_one({"email": email})
+    user = db.users.find_one({"email": email})
     if not user or not verify_password(data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     token = create_access_token(user["id"], user["email"])
@@ -376,7 +376,7 @@ async def create_contact(data: ContactCreate):
         "status": "new",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.contacts.insert_one(doc.copy())
+    db.contacts.insert_one(doc.copy())
     html = f"<h2>New Contact</h2><p><b>Name:</b> {doc['name']}<br><b>Email:</b> {doc['email']}<br><b>Phone:</b> {doc['phone'] or '-'}<br><b>Subject:</b> {doc['subject'] or '-'}</p><p>{doc['message']}</p>"
     email_sent = await send_notification_email("New Shadrasa Contact", html)
     return {"id": doc["id"], "email_sent": email_sent}
@@ -391,7 +391,7 @@ async def create_enquiry(data: EnquiryCreate):
         "status": "new",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.enquiries.insert_one(doc.copy())
+    db.enquiries.insert_one(doc.copy())
     html = f"<h2>New Enquiry</h2><p><b>Product:</b> {doc['product']}<br><b>Name:</b> {doc['name']}<br><b>Email:</b> {doc['email']}<br><b>Phone:</b> {doc['phone']}<br><b>Qty:</b> {doc['quantity'] or '-'}</p><p>{doc['message'] or ''}</p>"
     email_sent = await send_notification_email("New Shadrasa Enquiry", html)
     return {"id": doc["id"], "email_sent": email_sent}
@@ -403,7 +403,7 @@ async def create_order(data: OrderIn):
     items_validated = []
     subtotal = 0.0
     for it in data.items:
-        prod = await db.products.find_one({"id": it.product_id, "is_active": True}, {"_id": 0})
+        prod = db.products.find_one({"id": it.product_id, "is_active": True}, {"_id": 0})
         if not prod:
             raise HTTPException(400, f"Product unavailable: {it.name}")
         if prod.get("stock", 0) < it.quantity:
@@ -449,11 +449,11 @@ async def create_order(data: OrderIn):
         "status": "placed",
         "created_at": now.isoformat(),
     }
-    await db.orders.insert_one(doc.copy())
+    db.orders.insert_one(doc.copy())
 
     # Decrement stock
     for it in items_validated:
-        await db.products.update_one(
+        db.products.update_one(
             {"id": it["product_id"]},
             {"$inc": {"stock": -it["quantity"]}},
         )
@@ -490,7 +490,7 @@ async def create_order(data: OrderIn):
 
 @api_router.get("/orders/{order_no}")
 async def get_order_by_no(order_no: str):
-    doc = await db.orders.find_one({"order_no": order_no}, {"_id": 0})
+    doc = db.orders.find_one({"order_no": order_no}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Order not found")
     return doc
@@ -499,13 +499,13 @@ async def get_order_by_no(order_no: str):
 # -------- Public Site (read-only, exposes CMS content) --------
 @api_router.get("/site/content")
 async def site_content():
-    doc = await db.content.find_one({"id": "main"}, {"_id": 0})
+    doc = db.content.find_one({"id": "main"}, {"_id": 0})
     return doc or {}
 
 
 @api_router.get("/site/categories")
 async def site_categories():
-    items = await db.categories.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).to_list(200)
+    items = list(list(db.categories.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).limit(200))
     return items
 
 
@@ -516,29 +516,29 @@ async def site_products(category_id: Optional[str] = None, featured: Optional[bo
         q["category_id"] = category_id
     if featured is True:
         q["is_featured"] = True
-    items = await db.products.find(q, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).to_list(500)
+    items = list(db.products.find(q, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).limit(500))
     return items
 
 
 @api_router.get("/site/banners")
 async def site_banners():
-    items = await db.banners.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).to_list(50)
+    items = list(db.banners.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).limit(50))
     return items
 
 
 @api_router.get("/site/gallery")
 async def site_gallery():
-    items = await db.gallery.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).to_list(200)
+    items = list(db.gallery.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).limit(200))
     return items
 
 
 @api_router.get("/site/reviews")
 async def site_reviews():
     # Only return approved or featured reviews
-    items = await db.reviews.find(
+    items = list(db.reviews.find(
         {"status": {"$in": ["approved", "featured"]}}, 
         {"_id": 0}
-    ).sort("created_at", -1).to_list(50)
+    ).sort("created_at", -1).limit(50))
     return items
 
 
@@ -550,7 +550,7 @@ async def submit_review(data: ReviewIn):
         "status": "pending", # Force pending on submission
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.reviews.insert_one(doc.copy())
+    db.reviews.insert_one(doc.copy())
     doc.pop("_id", None)
     return doc
 
@@ -558,21 +558,21 @@ async def submit_review(data: ReviewIn):
 # -------- Admin CMS Routes --------
 @admin_router.get("/dashboard")
 async def dashboard(user: dict = Depends(get_current_user)):
-    pending = await db.orders.count_documents({"status": {"$in": ["placed", "confirmed", "packed"]}})
-    revenue_agg = await db.orders.aggregate([
+    pending = db.orders.count_documents({"status": {"$in": ["placed", "confirmed", "packed"]}})
+    revenue_agg = db.orders.aggregate([
         {"$match": {"status": {"$nin": ["cancelled"]}}},
         {"$group": {"_id": None, "total": {"$sum": "$total"}}},
-    ]).to_list(1)
+    ]).limit(1))
     total_revenue = revenue_agg[0]["total"] if revenue_agg else 0
     return {
-        "products": await db.products.count_documents({}),
-        "categories": await db.categories.count_documents({}),
-        "banners": await db.banners.count_documents({}),
-        "contacts": await db.contacts.count_documents({}),
-        "enquiries": await db.enquiries.count_documents({}),
-        "active_products": await db.products.count_documents({"is_active": True}),
-        "low_stock": await db.products.count_documents({"stock": {"$lte": 5}}),
-        "orders": await db.orders.count_documents({}),
+        "products": db.products.count_documents({}),
+        "categories": db.categories.count_documents({}),
+        "banners": db.banners.count_documents({}),
+        "contacts": db.contacts.count_documents({}),
+        "enquiries": db.enquiries.count_documents({}),
+        "active_products": db.products.count_documents({"is_active": True}),
+        "low_stock": db.products.count_documents({"stock": {"$lte": 5}}),
+        "orders": db.orders.count_documents({}),
         "pending_orders": pending,
         "revenue": total_revenue,
     }
@@ -580,25 +580,25 @@ async def dashboard(user: dict = Depends(get_current_user)):
 
 @admin_router.get("/contacts")
 async def admin_contacts(user: dict = Depends(get_current_user)):
-    return await db.contacts.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return list(db.contacts.find({}, {"_id": 0}).sort("created_at", -1).limit(500))
 
 
 @admin_router.get("/enquiries")
 async def admin_enquiries(user: dict = Depends(get_current_user)):
-    return await db.enquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return list(db.enquiries.find({}, {"_id": 0}).sort("created_at", -1).limit(500))
 
 
 @admin_router.get("/stats")
 async def admin_stats(user: dict = Depends(get_current_user)):
     return {
-        "contacts": await db.contacts.count_documents({}),
-        "enquiries": await db.enquiries.count_documents({}),
+        "contacts": db.contacts.count_documents({}),
+        "enquiries": db.enquiries.count_documents({}),
     }
 
 
 @admin_router.put("/enquiries/{eid}/status")
 async def update_enquiry_status(eid: str, data: StatusUpdate, user: dict = Depends(get_current_user)):
-    res = await db.enquiries.update_one({"id": eid}, {"$set": {"status": data.status}})
+    res = db.enquiries.update_one({"id": eid}, {"$set": {"status": data.status}})
     if res.matched_count == 0:
         raise HTTPException(404, "Enquiry not found")
     return {"ok": True}
@@ -606,7 +606,7 @@ async def update_enquiry_status(eid: str, data: StatusUpdate, user: dict = Depen
 
 @admin_router.put("/contacts/{cid}/status")
 async def update_contact_status(cid: str, data: StatusUpdate, user: dict = Depends(get_current_user)):
-    res = await db.contacts.update_one({"id": cid}, {"$set": {"status": data.status}})
+    res = db.contacts.update_one({"id": cid}, {"$set": {"status": data.status}})
     if res.matched_count == 0:
         raise HTTPException(404, "Contact not found")
     return {"ok": True}
@@ -618,12 +618,12 @@ async def list_orders(user: dict = Depends(get_current_user), status: Optional[s
     q: dict = {}
     if status:
         q["status"] = status
-    return await db.orders.find(q, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return list(db.orders.find(q, {"_id": 0}).sort("created_at", -1).limit(1000))
 
 
 @admin_router.get("/orders/{oid}")
 async def get_order(oid: str, user: dict = Depends(get_current_user)):
-    doc = await db.orders.find_one({"id": oid}, {"_id": 0})
+    doc = db.orders.find_one({"id": oid}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Order not found")
     return doc
@@ -631,21 +631,21 @@ async def get_order(oid: str, user: dict = Depends(get_current_user)):
 
 @admin_router.put("/orders/{oid}/status")
 async def update_order_status(oid: str, data: StatusUpdate, user: dict = Depends(get_current_user)):
-    res = await db.orders.update_one({"id": oid}, {"$set": {"status": data.status, "updated_at": datetime.now(timezone.utc).isoformat()}})
+    res = db.orders.update_one({"id": oid}, {"$set": {"status": data.status, "updated_at": datetime.now(timezone.utc).isoformat()}})
     if res.matched_count == 0:
         raise HTTPException(404, "Order not found")
-    return await db.orders.find_one({"id": oid}, {"_id": 0})
+    return db.orders.find_one({"id": oid}, {"_id": 0})
 
 
 # ---- Invoices ----
 @admin_router.get("/invoices")
 async def list_invoices(user: dict = Depends(get_current_user)):
-    return await db.invoices.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return list(db.invoices.find({}, {"_id": 0}).sort("created_at", -1).limit(1000))
 
 
 @admin_router.get("/invoices/{iid}")
 async def get_invoice(iid: str, user: dict = Depends(get_current_user)):
-    doc = await db.invoices.find_one({"id": iid}, {"_id": 0})
+    doc = db.invoices.find_one({"id": iid}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Invoice not found")
     return doc
@@ -653,7 +653,7 @@ async def get_invoice(iid: str, user: dict = Depends(get_current_user)):
 
 @api_router.get("/invoices/{iid}/pdf")
 async def public_invoice_pdf(iid: str):
-    doc = await db.invoices.find_one({"id": iid}, {"_id": 0})
+    doc = db.invoices.find_one({"id": iid}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Invoice not found")
     pdf_bytes = generate_invoice_pdf_bytes(doc)
@@ -678,7 +678,7 @@ async def create_invoice(data: InvoiceIn, user: dict = Depends(get_current_user)
         "created_at": now.isoformat(),
         "updated_at": now.isoformat(),
     }
-    await db.invoices.insert_one(doc.copy())
+    db.invoices.insert_one(doc.copy())
     doc.pop("_id", None)
     return doc
 
@@ -767,7 +767,7 @@ async def upload_invoice_file(
 
 @admin_router.get("/invoices/{iid}/pdf")
 async def invoice_pdf(iid: str, user: dict = Depends(get_current_user)):
-    invoice = await db.invoices.find_one({"id": iid}, {"_id": 0})
+    invoice = db.invoices.find_one({"id": iid}, {"_id": 0})
     if not invoice:
         raise HTTPException(404, "Invoice not found")
     pdf_bytes = generate_invoice_pdf_bytes(invoice)
@@ -776,7 +776,7 @@ async def invoice_pdf(iid: str, user: dict = Depends(get_current_user)):
 
 @admin_router.post("/invoices/{iid}/publish")
 async def publish_invoice_pdf(iid: str, request: Request, user: dict = Depends(get_current_user)):
-    invoice = await db.invoices.find_one({"id": iid}, {"_id": 0})
+    invoice = db.invoices.find_one({"id": iid}, {"_id": 0})
     if not invoice:
         raise HTTPException(404, "Invoice not found")
     pdf_bytes = generate_invoice_pdf_bytes(invoice)
@@ -792,15 +792,15 @@ async def publish_invoice_pdf(iid: str, request: Request, user: dict = Depends(g
 async def update_invoice(iid: str, data: InvoiceIn, user: dict = Depends(get_current_user)):
     payload = data.model_dump()
     payload["updated_at"] = datetime.now(timezone.utc).isoformat()
-    res = await db.invoices.update_one({"id": iid}, {"$set": payload})
+    res = db.invoices.update_one({"id": iid}, {"$set": payload})
     if res.matched_count == 0:
         raise HTTPException(404, "Invoice not found")
-    return await db.invoices.find_one({"id": iid}, {"_id": 0})
+    return db.invoices.find_one({"id": iid}, {"_id": 0})
 
 
 @admin_router.delete("/invoices/{iid}")
 async def delete_invoice(iid: str, user: dict = Depends(get_current_user)):
-    res = await db.invoices.delete_one({"id": iid})
+    res = db.invoices.delete_one({"id": iid})
     if res.deleted_count == 0:
         raise HTTPException(404, "Invoice not found")
     return {"ok": True}
@@ -809,7 +809,7 @@ async def delete_invoice(iid: str, user: dict = Depends(get_current_user)):
 # ---- Categories ----
 @admin_router.get("/categories")
 async def list_categories(user: dict = Depends(get_current_user)):
-    return await db.categories.find({}, {"_id": 0}).sort("sort_order", 1).to_list(200)
+    return list(db.categories.find({}, {"_id": 0}).sort("sort_order", 1).limit(200))
 
 
 @admin_router.post("/categories", status_code=201)
@@ -821,7 +821,7 @@ async def create_category(data: CategoryIn, user: dict = Depends(get_current_use
     }
     if not doc.get("slug"):
         doc["slug"] = doc["name"].lower().replace(" ", "-")
-    await db.categories.insert_one(doc.copy())
+    db.categories.insert_one(doc.copy())
     doc.pop("_id", None)
     return doc
 
@@ -829,15 +829,15 @@ async def create_category(data: CategoryIn, user: dict = Depends(get_current_use
 @admin_router.put("/categories/{cid}")
 async def update_category(cid: str, data: CategoryIn, user: dict = Depends(get_current_user)):
     payload = {k: v for k, v in data.model_dump().items() if v is not None}
-    res = await db.categories.update_one({"id": cid}, {"$set": payload})
+    res = db.categories.update_one({"id": cid}, {"$set": payload})
     if res.matched_count == 0:
         raise HTTPException(404, "Category not found")
-    return await db.categories.find_one({"id": cid}, {"_id": 0})
+    return db.categories.find_one({"id": cid}, {"_id": 0})
 
 
 @admin_router.delete("/categories/{cid}")
 async def delete_category(cid: str, user: dict = Depends(get_current_user)):
-    res = await db.categories.delete_one({"id": cid})
+    res = db.categories.delete_one({"id": cid})
     if res.deleted_count == 0:
         raise HTTPException(404, "Category not found")
     return {"ok": True}
@@ -846,7 +846,7 @@ async def delete_category(cid: str, user: dict = Depends(get_current_user)):
 # ---- Products ----
 @admin_router.get("/products")
 async def list_products(user: dict = Depends(get_current_user)):
-    return await db.products.find({}, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).to_list(500)
+    return list(db.products.find({}, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).limit(500))
 
 
 @admin_router.post("/products", status_code=201)
@@ -859,10 +859,10 @@ async def create_product(data: ProductIn, user: dict = Depends(get_current_user)
     }
     # auto-fill category_name from category_id
     if doc.get("category_id") and not doc.get("category_name"):
-        cat = await db.categories.find_one({"id": doc["category_id"]}, {"_id": 0})
+        cat = db.categories.find_one({"id": doc["category_id"]}, {"_id": 0})
         if cat:
             doc["category_name"] = cat["name"]
-    await db.products.insert_one(doc.copy())
+    db.products.insert_one(doc.copy())
     doc.pop("_id", None)
     return doc
 
@@ -872,18 +872,18 @@ async def update_product(pid: str, data: ProductIn, user: dict = Depends(get_cur
     payload = data.model_dump()
     payload["updated_at"] = datetime.now(timezone.utc).isoformat()
     if payload.get("category_id"):
-        cat = await db.categories.find_one({"id": payload["category_id"]}, {"_id": 0})
+        cat = db.categories.find_one({"id": payload["category_id"]}, {"_id": 0})
         if cat:
             payload["category_name"] = cat["name"]
-    res = await db.products.update_one({"id": pid}, {"$set": payload})
+    res = db.products.update_one({"id": pid}, {"$set": payload})
     if res.matched_count == 0:
         raise HTTPException(404, "Product not found")
-    return await db.products.find_one({"id": pid}, {"_id": 0})
+    return db.products.find_one({"id": pid}, {"_id": 0})
 
 
 @admin_router.delete("/products/{pid}")
 async def delete_product(pid: str, user: dict = Depends(get_current_user)):
-    res = await db.products.delete_one({"id": pid})
+    res = db.products.delete_one({"id": pid})
     if res.deleted_count == 0:
         raise HTTPException(404, "Product not found")
     return {"ok": True}
@@ -892,7 +892,7 @@ async def delete_product(pid: str, user: dict = Depends(get_current_user)):
 # ---- Banners ----
 @admin_router.get("/banners")
 async def list_banners(user: dict = Depends(get_current_user)):
-    return await db.banners.find({}, {"_id": 0}).sort("sort_order", 1).to_list(50)
+    return list(db.banners.find({}, {"_id": 0}).sort("sort_order", 1).limit(50))
 
 
 @admin_router.post("/banners", status_code=201)
@@ -902,22 +902,22 @@ async def create_banner(data: BannerIn, user: dict = Depends(get_current_user)):
         **data.model_dump(),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.banners.insert_one(doc.copy())
+    db.banners.insert_one(doc.copy())
     doc.pop("_id", None)
     return doc
 
 
 @admin_router.put("/banners/{bid}")
 async def update_banner(bid: str, data: BannerIn, user: dict = Depends(get_current_user)):
-    res = await db.banners.update_one({"id": bid}, {"$set": data.model_dump()})
+    res = db.banners.update_one({"id": bid}, {"$set": data.model_dump()})
     if res.matched_count == 0:
         raise HTTPException(404, "Banner not found")
-    return await db.banners.find_one({"id": bid}, {"_id": 0})
+    return db.banners.find_one({"id": bid}, {"_id": 0})
 
 
 @admin_router.delete("/banners/{bid}")
 async def delete_banner(bid: str, user: dict = Depends(get_current_user)):
-    res = await db.banners.delete_one({"id": bid})
+    res = db.banners.delete_one({"id": bid})
     if res.deleted_count == 0:
         raise HTTPException(404, "Banner not found")
     return {"ok": True}
@@ -926,7 +926,7 @@ async def delete_banner(bid: str, user: dict = Depends(get_current_user)):
 # ---- Gallery ----
 @admin_router.get("/gallery")
 async def list_gallery(user: dict = Depends(get_current_user)):
-    return await db.gallery.find({}, {"_id": 0}).sort("sort_order", 1).to_list(200)
+    return list(db.gallery.find({}, {"_id": 0}).sort("sort_order", 1).limit(200))
 
 
 @admin_router.post("/gallery", status_code=201)
@@ -936,22 +936,22 @@ async def create_gallery(data: GalleryIn, user: dict = Depends(get_current_user)
         **data.model_dump(),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.gallery.insert_one(doc.copy())
+    db.gallery.insert_one(doc.copy())
     doc.pop("_id", None)
     return doc
 
 
 @admin_router.put("/gallery/{gid}")
 async def update_gallery(gid: str, data: GalleryIn, user: dict = Depends(get_current_user)):
-    res = await db.gallery.update_one({"id": gid}, {"$set": data.model_dump()})
+    res = db.gallery.update_one({"id": gid}, {"$set": data.model_dump()})
     if res.matched_count == 0:
         raise HTTPException(404, "Gallery item not found")
-    return await db.gallery.find_one({"id": gid}, {"_id": 0})
+    return db.gallery.find_one({"id": gid}, {"_id": 0})
 
 
 @admin_router.delete("/gallery/{gid}")
 async def delete_gallery(gid: str, user: dict = Depends(get_current_user)):
-    res = await db.gallery.delete_one({"id": gid})
+    res = db.gallery.delete_one({"id": gid})
     if res.deleted_count == 0:
         raise HTTPException(404, "Gallery item not found")
     return {"ok": True}
@@ -960,20 +960,20 @@ async def delete_gallery(gid: str, user: dict = Depends(get_current_user)):
 # ---- Reviews ----
 @admin_router.get("/reviews")
 async def list_reviews(user: dict = Depends(get_current_user)):
-    return await db.reviews.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return list(db.reviews.find({}, {"_id": 0}).sort("created_at", -1).limit(200))
 
 
 @admin_router.put("/reviews/{rid}")
 async def update_review(rid: str, data: ReviewIn, user: dict = Depends(get_current_user)):
-    res = await db.reviews.update_one({"id": rid}, {"$set": data.model_dump()})
+    res = db.reviews.update_one({"id": rid}, {"$set": data.model_dump()})
     if res.matched_count == 0:
         raise HTTPException(404, "Review not found")
-    return await db.reviews.find_one({"id": rid}, {"_id": 0})
+    return db.reviews.find_one({"id": rid}, {"_id": 0})
 
 
 @admin_router.delete("/reviews/{rid}")
 async def delete_review(rid: str, user: dict = Depends(get_current_user)):
-    res = await db.reviews.delete_one({"id": rid})
+    res = db.reviews.delete_one({"id": rid})
     if res.deleted_count == 0:
         raise HTTPException(404, "Review not found")
     return {"ok": True}
@@ -982,7 +982,7 @@ async def delete_review(rid: str, user: dict = Depends(get_current_user)):
 # ---- Content ----
 @admin_router.get("/content")
 async def get_content(user: dict = Depends(get_current_user)):
-    doc = await db.content.find_one({"id": "main"}, {"_id": 0})
+    doc = db.content.find_one({"id": "main"}, {"_id": 0})
     return doc or {"id": "main"}
 
 
@@ -990,8 +990,8 @@ async def get_content(user: dict = Depends(get_current_user)):
 async def update_content(data: ContentIn, user: dict = Depends(get_current_user)):
     payload = {k: v for k, v in data.model_dump().items() if v is not None}
     payload["updated_at"] = datetime.now(timezone.utc).isoformat()
-    await db.content.update_one({"id": "main"}, {"$set": payload}, upsert=True)
-    return await db.content.find_one({"id": "main"}, {"_id": 0})
+    db.content.update_one({"id": "main"}, {"$set": payload}, upsert=True)
+    return db.content.find_one({"id": "main"}, {"_id": 0})
 
 
 # -------- Startup / Seeding --------
@@ -1088,9 +1088,9 @@ DEFAULT_REVIEWS = [
 async def seed_admin():
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@shadrasa.com").lower()
     admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
-    existing = await db.users.find_one({"email": admin_email})
+    existing = db.users.find_one({"email": admin_email})
     if existing is None:
-        await db.users.insert_one({
+        db.users.insert_one({
             "id": str(uuid.uuid4()),
             "email": admin_email,
             "password_hash": hash_password(admin_password),
@@ -1100,7 +1100,7 @@ async def seed_admin():
         })
         logger.info(f"Seeded admin: {admin_email}")
     elif not verify_password(admin_password, existing["password_hash"]):
-        await db.users.update_one(
+        db.users.update_one(
             {"email": admin_email},
             {"$set": {"password_hash": hash_password(admin_password)}},
         )
@@ -1108,15 +1108,15 @@ async def seed_admin():
 
 async def seed_cms():
     # Content
-    if not await db.content.find_one({"id": "main"}):
+    if not db.content.find_one({"id": "main"}):
         doc = {**DEFAULT_CONTENT, "updated_at": datetime.now(timezone.utc).isoformat()}
-        await db.content.insert_one(doc.copy())
+        db.content.insert_one(doc.copy())
         logger.info("Seeded default content")
 
     # Categories
     cat_id_by_slug = {}
     for c in DEFAULT_CATEGORIES:
-        existing = await db.categories.find_one({"slug": c["slug"]}, {"_id": 0})
+        existing = db.categories.find_one({"slug": c["slug"]}, {"_id": 0})
         if existing:
             cat_id_by_slug[c["slug"]] = existing["id"]
             continue
@@ -1127,12 +1127,12 @@ async def seed_cms():
             "is_active": True, "sort_order": c.get("sort_order", 0),
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-        await db.categories.insert_one(doc.copy())
+        db.categories.insert_one(doc.copy())
         cat_id_by_slug[c["slug"]] = doc["id"]
 
     # Products
     for p in DEFAULT_PRODUCTS:
-        if await db.products.find_one({"name": p["name"]}):
+        if db.products.find_one({"name": p["name"]}):
             continue
         cid = cat_id_by_slug.get(p["category_slug"])
         cname = next((c["name"] for c in DEFAULT_CATEGORIES if c["slug"] == p["category_slug"]), None)
@@ -1148,10 +1148,10 @@ async def seed_cms():
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
-        await db.products.insert_one(doc.copy())
+        db.products.insert_one(doc.copy())
 
     # Banners
-    if await db.banners.count_documents({}) == 0:
+    if db.banners.count_documents({}) == 0:
         for b in DEFAULT_BANNERS:
             doc = {
                 "id": str(uuid.uuid4()),
@@ -1161,10 +1161,10 @@ async def seed_cms():
                 "sort_order": b.get("sort_order", 0),
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
-            await db.banners.insert_one(doc.copy())
+            db.banners.insert_one(doc.copy())
 
     # Gallery
-    if await db.gallery.count_documents({}) == 0:
+    if db.gallery.count_documents({}) == 0:
         for g in DEFAULT_GALLERY:
             doc = {
                 "id": str(uuid.uuid4()),
@@ -1176,10 +1176,10 @@ async def seed_cms():
                 "sort_order": g.get("sort_order", 0),
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
-            await db.gallery.insert_one(doc.copy())
+            db.gallery.insert_one(doc.copy())
 
     # Reviews
-    if await db.reviews.count_documents({}) == 0:
+    if db.reviews.count_documents({}) == 0:
         for r in DEFAULT_REVIEWS:
             doc = {
                 "id": str(uuid.uuid4()),
@@ -1192,7 +1192,7 @@ async def seed_cms():
                 "is_verified_purchase": r["is_verified_purchase"],
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
-            await db.reviews.insert_one(doc.copy())
+            db.reviews.insert_one(doc.copy())
 
 
 @app.on_event("startup")
@@ -1200,20 +1200,20 @@ async def startup():
     if db is None:
         print("❌ DB not connected, skipping startup tasks")
         return
-    await db.users.create_index("email", unique=True)
-    await db.users.create_index("id", unique=True)
-    await db.products.create_index("id", unique=True)
-    await db.categories.create_index("id", unique=True)
-    await db.categories.create_index("slug", unique=True)
-    await db.banners.create_index("id", unique=True)
-    await db.content.create_index("id", unique=True)
-    await db.contacts.create_index("created_at")
-    await db.enquiries.create_index("created_at")
-    await db.orders.create_index("id", unique=True)
-    await db.orders.create_index("order_no", unique=True)
-    await db.orders.create_index("created_at")
-    await db.invoices.create_index("id", unique=True)
-    await db.invoices.create_index("invoice_no", unique=True)
+    db.users.create_index("email", unique=True)
+    db.users.create_index("id", unique=True)
+    db.products.create_index("id", unique=True)
+    db.categories.create_index("id", unique=True)
+    db.categories.create_index("slug", unique=True)
+    db.banners.create_index("id", unique=True)
+    db.content.create_index("id", unique=True)
+    db.contacts.create_index("created_at")
+    db.enquiries.create_index("created_at")
+    db.orders.create_index("id", unique=True)
+    db.orders.create_index("order_no", unique=True)
+    db.orders.create_index("created_at")
+    db.invoices.create_index("id", unique=True)
+    db.invoices.create_index("invoice_no", unique=True)
     await seed_admin()
     await seed_cms()
 
