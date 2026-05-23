@@ -152,13 +152,11 @@ export default function Navbar() {
             onClick={() => openCart(true)}
             data-testid="nav-cart-btn"
             aria-label="Open cart"
-            className={`relative h-10 w-10 rounded-full flex items-center justify-center transition-colors ${
-              scrolled ? "bg-[#fdfbf7] text-[#0a331e] hover:bg-[#0f4d2e] hover:text-white" : "bg-white/15 text-white hover:bg-white hover:text-[#0a331e]"
-            }`}
+            className="relative h-10 w-10 rounded-full flex items-center justify-center bg-white text-[#0a331e] shadow-md border border-[#0f4d2e]/10 hover:bg-gray-100 transition-all"
           >
-            <ShoppingBag size={17} />
+            <ShoppingBag size={18} />
             {count > 0 && (
-              <span data-testid="nav-cart-count" className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#d4a017] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+              <span data-testid="nav-cart-count" className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-yellow-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-sm">
                 {count}
               </span>
             )}
@@ -170,11 +168,11 @@ export default function Navbar() {
             onClick={() => openCart(true)}
             data-testid="nav-cart-btn-mobile"
             aria-label="Open cart"
-            className={`relative h-10 w-10 rounded-full flex items-center justify-center ${scrolled ? "text-[#0a331e]" : "text-white"}`}
+            className="relative h-10 w-10 rounded-full flex items-center justify-center bg-white text-[#0a331e] shadow-md border border-[#0f4d2e]/10 hover:bg-gray-100 transition-all"
           >
-            <ShoppingBag size={20} />
+            <ShoppingBag size={18} />
             {count > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#d4a017] text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white">
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-yellow-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-sm">
                 {count}
               </span>
             )}
