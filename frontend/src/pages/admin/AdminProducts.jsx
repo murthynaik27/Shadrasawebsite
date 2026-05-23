@@ -212,7 +212,7 @@ export default function AdminProducts() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Weight Options *</Label>
-              <button type="button" onClick={() => setForm({ ...form, weight_options: [...(form.weight_options || []), { weight: "", unit: "g", price: 0, sale_price: "", stock: 0 }] })} className="text-xs bg-[#0f4d2e]/10 text-[#0f4d2e] px-3 py-1.5 rounded-full font-semibold hover:bg-[#0f4d2e]/20 transition-colors">
+              <button type="button" onClick={() => setForm({ ...form, weight_options: [...(form.weight_options || []), { weight: "", unit: "g", price: 0, sale_price: "", stock: 0, image: "" }] })} className="text-xs bg-[#0f4d2e]/10 text-[#0f4d2e] px-3 py-1.5 rounded-full font-semibold hover:bg-[#0f4d2e]/20 transition-colors">
                 + Add Option
               </button>
             </div>
@@ -221,41 +221,45 @@ export default function AdminProducts() {
             ) : (
               <div className="space-y-3">
                 {form.weight_options.map((opt, idx) => (
-                  <div key={idx} className="flex flex-wrap items-end gap-3 p-4 bg-[#fdfbf7] border border-[#6b3e1f]/10 rounded-xl relative group">
-                    <button type="button" onClick={() => setForm({ ...form, weight_options: form.weight_options.filter((_, i) => i !== idx) })} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-200">
+                  <div key={idx} className="flex flex-col gap-3 p-4 bg-[#fdfbf7] border border-[#6b3e1f]/10 rounded-xl relative group">
+                    <button type="button" onClick={() => setForm({ ...form, weight_options: form.weight_options.filter((_, i) => i !== idx) })} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-200 z-10">
                       <Trash2 size={12} />
                     </button>
-                    <label className="flex-1 min-w-[80px]">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Weight</span>
-                      <TextInput type="number" min="0" step="any" required value={opt.weight} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].weight = e.target.value; setForm({ ...form, weight_options: newOpts }); }} placeholder="500" />
-                    </label>
-                    <label className="w-24">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Unit</span>
-                      <select value={opt.unit || "g"} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].unit = e.target.value; setForm({ ...form, weight_options: newOpts }); }} className="w-full rounded-xl border border-[#6b3e1f]/20 px-3 py-[9px] text-sm bg-white">
-                        <option value="g">g</option>
-                        <option value="kg">kg</option>
-                        <option value="ml">ml</option>
-                        <option value="L">L</option>
-                      </select>
-                    </label>
-                    <label className="flex-1 min-w-[80px]">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Price (₹)</span>
-                      <TextInput type="number" min="0" required value={opt.price} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].price = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
-                    </label>
-                    <label className="flex-1 min-w-[80px]">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Sale (₹)</span>
-                      <TextInput type="number" min="0" value={opt.sale_price ?? ""} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].sale_price = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
-                    </label>
-                    <label className="w-24">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Stock</span>
-                      <TextInput type="number" min="0" required value={opt.stock} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].stock = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
-                    </label>
+                    <div className="flex flex-wrap items-end gap-3">
+                      <label className="flex-1 min-w-[80px]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Weight</span>
+                        <TextInput type="number" min="0" step="any" required value={opt.weight} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].weight = e.target.value; setForm({ ...form, weight_options: newOpts }); }} placeholder="500" />
+                      </label>
+                      <label className="w-24">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Unit</span>
+                        <select value={opt.unit || "g"} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].unit = e.target.value; setForm({ ...form, weight_options: newOpts }); }} className="w-full rounded-xl border border-[#6b3e1f]/20 px-3 py-[9px] text-sm bg-white">
+                          <option value="g">g</option>
+                          <option value="kg">kg</option>
+                          <option value="ml">ml</option>
+                          <option value="L">L</option>
+                        </select>
+                      </label>
+                      <label className="flex-1 min-w-[80px]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Price (₹)</span>
+                        <TextInput type="number" min="0" required value={opt.price} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].price = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
+                      </label>
+                      <label className="flex-1 min-w-[80px]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Sale (₹)</span>
+                        <TextInput type="number" min="0" value={opt.sale_price ?? ""} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].sale_price = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
+                      </label>
+                      <label className="w-24">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Stock</span>
+                        <TextInput type="number" min="0" required value={opt.stock} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].stock = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
+                      </label>
+                    </div>
+                    <div className="mt-2">
+                      <ImageInput value={opt.image || ""} onChange={(v) => { const newOpts = [...form.weight_options]; newOpts[idx].image = v; setForm({ ...form, weight_options: newOpts }); }} label={`Image for ${opt.weight}${opt.unit || "g"}`} />
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-          <ImageInput value={form.image} onChange={(v) => setForm({ ...form, image: v })} label="Product Image" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <label className="flex items-center gap-2 text-sm font-semibold text-[#0a331e] cursor-pointer pt-6">
               <input type="checkbox" checked={!!form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="h-4 w-4 accent-[#0f4d2e]" />

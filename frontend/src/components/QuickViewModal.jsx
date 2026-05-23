@@ -22,6 +22,8 @@ export default function QuickViewModal({ open, onOpenChange, product, onAddToCar
   const stock = selectedOpt ? selectedOpt.stock : product.stock;
   const weight = selectedOpt ? selectedOpt.weight : product.weight;
   const unit = selectedOpt ? selectedOpt.unit : product.unit;
+  const displayImage = selectedOpt && selectedOpt.image ? selectedOpt.image : product.image;
+  const displayBlur = selectedOpt && selectedOpt.blur_image ? selectedOpt.blur_image : product.blur_image;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -35,10 +37,10 @@ export default function QuickViewModal({ open, onOpenChange, product, onAddToCar
         <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
           {/* Image Section */}
           <div className="md:w-1/2 relative bg-white flex items-center justify-center p-8 aspect-square md:aspect-auto">
-            {product.image ? (
+            {displayImage ? (
               <OptimizedImage 
-                src={product.image} 
-                blurData={product.blur_image}
+                src={displayImage} 
+                blurData={displayBlur}
                 alt={product.name} 
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" 
                 containerClassName="absolute inset-0"

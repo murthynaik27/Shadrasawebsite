@@ -183,6 +183,8 @@ class WeightOptionIn(BaseModel):
     price: float
     sale_price: Optional[float] = None
     stock: int = 0
+    image: Optional[str] = None
+    blur_image: Optional[str] = None
 
 
 class ProductIn(BaseModel):
@@ -1059,6 +1061,12 @@ async def create_product(data: ProductIn, user: dict = Depends(get_current_user)
     payload = data.model_dump()
     
     if payload.get("weight_options"):
+        for opt in payload["weight_options"]:
+            if opt.get("image") and opt["image"].startswith("data:image"):
+                processed = process_and_save_image(opt["image"], prefix="prod_opt")
+                opt["image"] = processed["url"]
+                opt["blur_image"] = processed["blur"]
+                
         # Auto-calculate main price and stock from options
         payload["price"] = payload["weight_options"][0]["price"]
         payload["sale_price"] = payload["weight_options"][0].get("sale_price")
@@ -1090,6 +1098,12 @@ async def update_product(pid: str, data: ProductIn, user: dict = Depends(get_cur
     payload = data.model_dump()
     
     if payload.get("weight_options"):
+        for opt in payload["weight_options"]:
+            if opt.get("image") and opt["image"].startswith("data:image"):
+                processed = process_and_save_image(opt["image"], prefix="prod_opt")
+                opt["image"] = processed["url"]
+                opt["blur_image"] = processed["blur"]
+                
         # Auto-calculate main price and stock from options
         payload["price"] = payload["weight_options"][0]["price"]
         payload["sale_price"] = payload["weight_options"][0].get("sale_price")

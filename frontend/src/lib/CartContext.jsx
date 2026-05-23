@@ -48,7 +48,7 @@ export function CartProvider({ children }) {
         {
           product_id: product.id,
           name: product.name,
-          image: product.image,
+          image: opt && opt.image ? opt.image : product.image,
           price: Number(price) || 0,
           quantity: qty,
           stock: opt ? opt.stock : product.stock,
