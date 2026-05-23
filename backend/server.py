@@ -1415,13 +1415,23 @@ app.include_router(api_router)
 app.include_router(admin_router)
 app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+cors_origins_env = os.environ.get("CORS_ORIGINS", "*")
+if cors_origins_env == "*":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_credentials=True,
+        allow_origin_regex=".*",
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_credentials=True,
+        allow_origins=cors_origins_env.split(","),
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Log basic startup info for Render logs and debugging
 logger.info(f"Shadrasa API initialized. DB connected: {db is not None}")

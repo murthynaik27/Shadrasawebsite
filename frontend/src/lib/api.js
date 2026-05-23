@@ -12,7 +12,11 @@ const inferredBackendUrl = isBrowser
     })()
   : null;
 
-export const BACKEND_URL = process.env.REACT_APP_API_URL || inferredBackendUrl || "";
+const DEFAULT_PRODUCTION_BACKEND_URL = "https://shadrasawebsite.onrender.com";
+export const BACKEND_URL =
+  process.env.REACT_APP_API_URL ||
+  inferredBackendUrl ||
+  (process.env.NODE_ENV === "production" ? DEFAULT_PRODUCTION_BACKEND_URL : "");
 
 // Also strip trailing slash if present
 const cleanBackendUrl = BACKEND_URL.replace(/\/$/, "");
