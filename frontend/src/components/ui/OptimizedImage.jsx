@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageIcon } from "lucide-react";
 import { getImageUrl } from "../../lib/api";
@@ -13,11 +13,23 @@ export default function OptimizedImage({
 }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const imgRef = useRef(null);
 
   // Reset state if src changes
   useEffect(() => {
     setIsLoaded(false);
     setHasError(false);
+  }, [src]);
+
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      if (imgRef.current.naturalWidth > 0) {
+        setIsLoaded(true);
+      } else if (imgRef.current.naturalWidth === 0 && imgRef.current.src) {
+        // Only set error if it actually tried to load something
+        // setHasError(true);
+      }
+    }
   }, [src]);
 
   return (
@@ -52,6 +64,7 @@ export default function OptimizedImage({
       {/* 4. Top Layer: The Actual Image */}
       {src && !hasError && (
         <img
+          ref={imgRef}
           src={getImageUrl(src)}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
