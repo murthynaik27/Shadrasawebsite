@@ -16,22 +16,22 @@ export default function Footer({ content = {} }) {
     { label: "Contact", href: "#contact" },
   ];
   return (
-    <footer data-testid="footer" className="bg-[#0a331e] text-white py-6 md:py-10 relative overflow-hidden">
+    <footer data-testid="footer" className="bg-[#0a331e] text-white py-8 md:py-10 relative overflow-hidden">
       <div className="grain" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 relative">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 pb-6 md:pb-12 border-b border-white/10">
-          <div className="col-span-2 flex flex-col items-center md:items-start text-center md:text-left">
-            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 mb-4 md:mb-5">
-              <img src={LOGO_URL} alt="Shadrasa" className="h-10 w-10 md:h-14 md:w-14 bg-white rounded-lg md:rounded-xl p-1.5" />
-              <div>
-                <p className="font-display text-xl md:text-2xl font-bold">Shadrasa</p>
-                <p className="text-[9px] md:text-xs uppercase tracking-widest md:tracking-[0.25em] text-[#d4a017] font-semibold mt-0.5 md:mt-0">Authentic Traditional Taste</p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-10 pb-8 md:pb-12 border-b border-white/10">
+          <div className="md:col-span-2 flex flex-col items-center md:items-start text-center md:text-left">
+            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-3 mb-4 md:mb-5">
+              <img src={LOGO_URL} alt="Shadrasa" className="h-12 w-12 md:h-14 md:w-14 bg-white rounded-lg md:rounded-xl p-1.5" />
+              <div className="mt-1 md:mt-0">
+                <p className="font-display text-lg md:text-2xl font-bold">Shadrasa</p>
+                <p className="text-[10px] md:text-xs uppercase tracking-widest md:tracking-[0.25em] text-[#d4a017] font-semibold mt-0.5 md:mt-0">Authentic Traditional Taste</p>
               </div>
             </div>
-            <p className="text-white/70 text-xs md:text-sm leading-relaxed max-w-md">
+            <p className="text-white/70 text-sm leading-relaxed max-w-xs md:max-w-md mx-auto md:mx-0">
               {content.footer_tagline || "Bringing authentic Malenadu taste to every home — premium homemade pickles and pure natural honey, crafted with tradition from the heart of Karnataka."}
             </p>
-            <div className="flex gap-3 mt-5 md:mt-6 justify-center md:justify-start">
+            <div className="flex gap-3 mt-5 md:mt-6 justify-center md:justify-start w-full">
               {[Facebook, Instagram, Youtube, Twitter].map((Ic, i) => (
                 <a key={i} href="#" data-testid={`footer-social-${i}`} aria-label="Social" className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white/10 hover:bg-[#d4a017] flex items-center justify-center transition-colors">
                   <Ic size={14} className="md:w-4 md:h-4" />
@@ -40,23 +40,23 @@ export default function Footer({ content = {} }) {
             </div>
           </div>
 
-          <div className="col-span-1">
-            <h4 className="font-display text-sm md:text-lg font-semibold mb-3 md:mb-5">Quick Links</h4>
+          <div className="text-center md:text-left mt-2 md:mt-0">
+            <h4 className="font-display text-base md:text-lg font-semibold mb-3 md:mb-5">Quick Links</h4>
             <ul className="space-y-2 md:space-y-3">
               {links.map((l) => (
-                <li key={l.href}><a href={l.href} className="text-white/70 hover:text-[#d4a017] text-xs md:text-sm transition-colors">{l.label}</a></li>
+                <li key={l.href}><a href={l.href} className="text-white/70 hover:text-[#d4a017] text-sm transition-colors">{l.label}</a></li>
               ))}
             </ul>
           </div>
 
-          <div className="col-span-1">
-            <h4 className="font-display text-sm md:text-lg font-semibold mb-3 md:mb-5">Contact</h4>
-            <ul className="space-y-2 md:space-y-3 text-[11px] md:text-sm text-white/70">
+          <div className="text-center md:text-left mt-2 md:mt-0">
+            <h4 className="font-display text-base md:text-lg font-semibold mb-3 md:mb-5">Contact</h4>
+            <ul className="space-y-2 md:space-y-3 text-sm text-white/70">
               <li><a href={`tel:${PHONE.replace(/\s/g, "")}`} className="hover:text-[#d4a017] break-all">{PHONE}</a></li>
               <li><a href={`mailto:${EMAIL}`} className="hover:text-[#d4a017] break-all">{EMAIL}</a></li>
               <li>{ADDR}</li>
               <li className="pt-2 md:pt-3">
-                <Link to="/admin/login" data-testid="footer-admin-link" className="text-white/40 hover:text-[#d4a017] text-[9px] md:text-xs uppercase tracking-widest md:tracking-[0.2em]">Admin Portal</Link>
+                <Link to="/admin/login" data-testid="footer-admin-link" className="text-white/40 hover:text-[#d4a017] text-[10px] md:text-xs uppercase tracking-widest md:tracking-[0.2em]">Admin Portal</Link>
               </li>
             </ul>
           </div>
