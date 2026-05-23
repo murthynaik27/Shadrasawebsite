@@ -16,8 +16,9 @@
   box-sizing: border-box;
 }
 
-body {
+html, body, #root {
   overflow-x: hidden;
+  max-width: 100%;
 }
 
 img,
@@ -41,6 +42,7 @@ textarea {
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
