@@ -81,11 +81,11 @@ export default function Contact({ content = {} }) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="lg:col-span-3 rounded-3xl bg-white p-8 md:p-10 border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+            className="lg:col-span-3 w-full max-w-md mx-auto lg:max-w-none rounded-2xl md:rounded-3xl bg-white p-5 md:p-10 border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
             data-testid="contact-form"
           >
-            <h3 className="font-display text-2xl md:text-3xl font-semibold text-[#0a331e] mb-6">Send us a message</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <h3 className="font-display text-xl md:text-3xl font-semibold text-[#0a331e] mb-4 md:mb-6">Send us a message</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5">
               <Field label="Your Name" required>
                 <input required data-testid="contact-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="cf-input" />
               </Field>
@@ -99,15 +99,15 @@ export default function Contact({ content = {} }) {
                 <input data-testid="contact-subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="cf-input" />
               </Field>
             </div>
-            <div className="mt-5">
+            <div className="mt-3 md:mt-5">
               <Field label="Message" required>
-                <textarea required rows={5} data-testid="contact-message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="cf-input" />
+                <textarea required data-testid="contact-message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="cf-input" />
               </Field>
             </div>
-            <button type="submit" disabled={loading} data-testid="contact-submit" className="mt-6 w-full bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-60 text-white rounded-full font-semibold transition-all duration-300 px-6 py-3.5 btn-glow">
+            <button type="submit" disabled={loading} data-testid="contact-submit" className="mt-4 md:mt-6 w-full bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-60 text-white rounded-xl md:rounded-full font-semibold transition-all duration-300 h-11 md:h-12 px-6 text-sm md:text-base btn-glow">
               {loading ? "Sending..." : "Send Message"}
             </button>
-            <style>{`.cf-input { width:100%; border-radius:12px; border:1px solid rgba(107,62,31,0.2); padding:12px 16px; font-size:14px; outline:none; transition: all .2s; background:#fdfbf7;} .cf-input:focus { border-color:#0f4d2e; box-shadow:0 0 0 3px rgba(15,77,46,0.12); background:#fff;}`}</style>
+            <style>{`.cf-input { width:100%; height:40px; border-radius:8px; border:1px solid rgba(107,62,31,0.2); padding:8px 12px; font-size:14px; outline:none; transition: all .2s; background:#fdfbf7;} textarea.cf-input { height: 96px; resize: none; padding-top:10px; } .cf-input:focus { border-color:#0f4d2e; box-shadow:0 0 0 3px rgba(15,77,46,0.12); background:#fff;} @media (min-width: 768px) { .cf-input { height:48px; border-radius:12px; padding:12px 16px; } textarea.cf-input { height: 120px; } }`}</style>
           </motion.form>
         </div>
       </div>
@@ -140,7 +140,7 @@ function InfoCard({ icon: Icon, title, value, href, external, testid, accent }) 
 function Field({ label, required, children }) {
   return (
     <label className="block">
-      <span className="block text-xs font-bold uppercase tracking-[0.18em] text-[#6b3e1f] mb-2">
+      <span className="block text-[11px] md:text-xs font-bold uppercase tracking-wider md:tracking-[0.18em] text-[#6b3e1f] mb-1.5 md:mb-2">
         {label} {required && <span className="text-[#d4a017]">*</span>}
       </span>
       {children}
