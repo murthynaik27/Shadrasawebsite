@@ -161,9 +161,9 @@ export default function Products({ products = [] }) {
                               <button
                                 key={idx}
                                 onClick={(e) => handleOptionSelect(e, p.id, wOpt)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                                className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all border-2 ${
                                   isSelected 
-                                    ? "bg-[#0f4d2e] border-[#0f4d2e] text-white shadow-md" 
+                                    ? "bg-[#0f4d2e] border-[#0f4d2e] text-white shadow-md ring-2 ring-[#0f4d2e] ring-offset-2" 
                                     : "bg-white border-[#6b3e1f]/20 text-[#0a331e] hover:border-[#0f4d2e] hover:text-[#0f4d2e]"
                                 }`}
                               >

@@ -150,7 +150,7 @@ export default function CategoryPage() {
               <p>No products available in this category yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="flex flex-wrap justify-center gap-6 md:gap-8">
               {products.map((p, i) => {
                 // Mock rating for design completion as rating is not in Product model
                 const rating = 4 + (i % 2 === 0 ? 0.5 : 0);
@@ -162,10 +162,10 @@ export default function CategoryPage() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: i * 0.1 }}
-                    className={`group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(212,160,23,0.15)] hover:-translate-y-2 transition-all duration-500 ease-out cursor-pointer ${loadingProduct === p.id ? 'scale-95 opacity-90' : ''}`}
+                    className={`group flex flex-col w-full max-w-[400px] bg-white rounded-2xl overflow-hidden border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(212,160,23,0.15)] hover:-translate-y-2 transition-all duration-500 ease-out cursor-pointer mx-auto sm:mx-0 ${loadingProduct === p.id ? 'scale-95 opacity-90' : ''}`}
                     onClick={() => handleProductClick(p)}
                   >
-                    <div className="relative aspect-[4/5] overflow-hidden bg-[#fdfbf7] p-4 flex items-center justify-center">
+                    <div className="relative aspect-[4/5] overflow-hidden bg-[#fdfbf7] flex items-center justify-center">
                       {(() => {
                         const opt = getSelectedOption(p);
                         const displayImage = opt && opt.image ? opt.image : p.image;
@@ -210,16 +210,16 @@ export default function CategoryPage() {
                       )}
                     </div>
                     
-                    <div className="p-6 flex-1 flex flex-col">
+                    <div className="p-5 md:p-7 flex-1 flex flex-col">
                       <div className="flex-1">
                         {p.tagline && (
-                          <p className="text-[11px] font-bold text-[#6b3e1f] mb-1">{p.tagline}</p>
+                          <p className="text-xs font-bold text-[#6b3e1f] mb-1.5 uppercase tracking-wider">{p.tagline}</p>
                         )}
-                        <h3 className="font-display text-lg font-semibold text-[#0a331e] mb-2">{p.name}</h3>
+                        <h3 className="font-display text-xl md:text-2xl font-semibold text-[#0a331e] mb-2">{p.name}</h3>
                         
-                        <div className="flex items-center gap-1 mb-4">
+                        <div className="flex items-center gap-1.5 mb-5">
                           {renderStars(rating)}
-                          <span className="text-[10px] text-[#6b3e1f] ml-1">({reviewsCount})</span>
+                          <span className="text-xs text-[#6b3e1f] font-medium ml-1">({reviewsCount} reviews)</span>
                         </div>
 
                         {(() => {
@@ -230,18 +230,18 @@ export default function CategoryPage() {
 
                           return (
                             <>
-                              <div className="mb-4">
+                              <div className="mb-6">
                                 {p.weight_options && p.weight_options.length > 0 && (
-                                  <div className="mb-3 flex flex-wrap gap-1.5">
+                                  <div className="mb-4 flex flex-wrap gap-2.5">
                                     {p.weight_options.map((wOpt, idx) => {
                                       const isSelected = opt && opt.weight === wOpt.weight && opt.unit === wOpt.unit;
                                       return (
                                         <button
                                           key={idx}
                                           onClick={(e) => handleOptionSelect(e, p.id, wOpt)}
-                                          className={`px-3 py-1 rounded-full text-[10px] font-semibold transition-all border ${
+                                          className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all border-2 ${
                                             isSelected 
-                                              ? "bg-[#0f4d2e] border-[#0f4d2e] text-white shadow-md" 
+                                              ? "bg-[#0f4d2e] border-[#0f4d2e] text-white shadow-md ring-2 ring-[#0f4d2e] ring-offset-2" 
                                               : "bg-white border-[#6b3e1f]/20 text-[#0a331e] hover:border-[#0f4d2e] hover:text-[#0f4d2e]"
                                           }`}
                                         >
@@ -252,13 +252,13 @@ export default function CategoryPage() {
                                   </div>
                                 )}
                                 {sale_price && sale_price < price ? (
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-[#0a331e]">{formatPrice(sale_price, p.currency)}</span>
-                                    <span className="text-xs line-through text-[#6b3e1f]/60">{formatPrice(price, p.currency)}</span>
+                                  <div className="flex items-baseline gap-2.5 mt-2">
+                                    <span className="font-display text-2xl font-bold text-[#0f4d2e]">{formatPrice(sale_price, p.currency)}</span>
+                                    <span className="text-sm font-medium line-through text-[#6b3e1f]/50">{formatPrice(price, p.currency)}</span>
                                   </div>
                                 ) : (
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-[#0a331e]">{formatPrice(price, p.currency)}</span>
+                                  <div className="flex items-baseline gap-2 mt-2">
+                                    <span className="font-display text-2xl font-bold text-[#0f4d2e]">{formatPrice(price, p.currency)}</span>
                                   </div>
                                 )}
                               </div>
@@ -273,9 +273,9 @@ export default function CategoryPage() {
                           const opt = getSelectedOption(p);
                           return (opt ? opt.stock : p.stock) <= 0;
                         })()}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-[#0f4d2e] border border-[#0f4d2e]/20 hover:bg-[#d4a017] hover:border-[#d4a017] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full flex items-center justify-center gap-2 py-3.5 px-6 mt-2 rounded-xl text-base font-bold text-white bg-[#0f4d2e] border border-[#0f4d2e]/20 hover:bg-[#d4a017] hover:border-[#d4a017] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
                       >
-                        <ShoppingCart size={15} /> Add to Cart
+                        <ShoppingCart size={18} /> Add to Cart
                       </button>
                     </div>
                   </motion.div>
