@@ -41,24 +41,24 @@ export default function About({ content = {} }) {
               {content.about_body}
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div data-testid="about-mission" className="rounded-2xl bg-white p-6 border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                <div className="h-11 w-11 rounded-xl bg-[#0f4d2e] flex items-center justify-center mb-4">
-                  <Sparkles size={20} className="text-[#d4a017]" />
+            <div className="grid grid-cols-2 gap-3 md:gap-6">
+              <div data-testid="about-mission" className="rounded-xl md:rounded-2xl bg-white p-4 md:p-6 border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center text-center h-full">
+                <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-[#0f4d2e] flex items-center justify-center mb-3 md:mb-4">
+                  <Sparkles className="text-[#d4a017] w-5 h-5" />
                 </div>
-                <h3 className="font-display text-xl font-semibold text-[#0a331e] mb-2">
+                <h3 className="font-display text-base md:text-xl font-semibold text-[#0a331e] mb-1.5 md:mb-2">
                   {content.mission_title || "Our Mission"}
                 </h3>
-                <p className="text-sm text-[#4a453f] leading-relaxed">{content.mission_body}</p>
+                <p className="text-[11px] md:text-sm text-[#4a453f] leading-relaxed flex-1">{content.mission_body}</p>
               </div>
-              <div data-testid="about-vision" className="rounded-2xl bg-white p-6 border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                <div className="h-11 w-11 rounded-xl bg-[#d4a017] flex items-center justify-center mb-4">
-                  <Leaf size={20} className="text-white" />
+              <div data-testid="about-vision" className="rounded-xl md:rounded-2xl bg-white p-4 md:p-6 border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center text-center h-full">
+                <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-[#d4a017] flex items-center justify-center mb-3 md:mb-4">
+                  <Leaf className="text-white w-5 h-5" />
                 </div>
-                <h3 className="font-display text-xl font-semibold text-[#0a331e] mb-2">
+                <h3 className="font-display text-base md:text-xl font-semibold text-[#0a331e] mb-1.5 md:mb-2">
                   {content.vision_title || "Our Vision"}
                 </h3>
-                <p className="text-sm text-[#4a453f] leading-relaxed">{content.vision_body}</p>
+                <p className="text-[11px] md:text-sm text-[#4a453f] leading-relaxed flex-1">{content.vision_body}</p>
               </div>
             </div>
           </motion.div>
