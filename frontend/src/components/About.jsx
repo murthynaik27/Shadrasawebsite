@@ -22,7 +22,7 @@ export default function About({ content = {} }) {
             <img
               src={content.about_image || DEFAULT_IMG}
               alt="About Shadrasa"
-              className="rounded-3xl w-full h-[520px] object-cover shadow-2xl"
+              className="rounded-[24px] md:rounded-3xl w-full h-[320px] sm:h-[400px] md:h-[520px] object-cover shadow-2xl"
             />
           </motion.div>
 
