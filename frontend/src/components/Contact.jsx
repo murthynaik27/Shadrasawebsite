@@ -44,13 +44,13 @@ export default function Contact({ content = {} }) {
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 lg:gap-12">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7 }}
-            className="lg:col-span-2 space-y-4"
+            className="lg:col-span-2 space-y-3 md:space-y-4"
           >
             <InfoCard icon={Phone} title="Call Us" value={PHONE} href={`tel:${PHONE.replace(/\s/g, "")}`} testid="info-phone" />
             <InfoCard icon={Mail} title="Email Us" value={EMAIL} href={`mailto:${EMAIL}`} testid="info-email" />
@@ -64,7 +64,7 @@ export default function Contact({ content = {} }) {
               testid="info-whatsapp"
               accent
             />
-            <div className="rounded-2xl overflow-hidden border border-[#6b3e1f]/15 h-56" data-testid="map-embed">
+            <div className="rounded-xl md:rounded-2xl overflow-hidden border border-[#6b3e1f]/15 h-[180px] md:h-[250px]" data-testid="map-embed">
               <iframe
                 title="Shadrasa location"
                 className="w-full h-full"
@@ -116,17 +116,17 @@ export default function Contact({ content = {} }) {
 }
 
 function InfoCard({ icon: Icon, title, value, href, external, testid, accent }) {
-  const cls = `flex items-center gap-4 rounded-2xl p-5 border transition-all duration-300 ${
+  const cls = `flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl p-3.5 md:p-5 border transition-all duration-300 ${
     accent ? "bg-[#0f4d2e] text-white border-[#0f4d2e] hover:bg-[#0a331e]" : "bg-white text-[#0a331e] border-[#6b3e1f]/10 hover:border-[#d4a017]/40"
   }`;
   const inner = (
     <>
-      <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? "bg-[#d4a017]" : "bg-[#fdfbf7] border border-[#0f4d2e]/10"}`}>
-        <Icon size={20} className={accent ? "text-white" : "text-[#0f4d2e]"} />
+      <div className={`h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? "bg-[#d4a017]" : "bg-[#fdfbf7] border border-[#0f4d2e]/10"}`}>
+        <Icon className={`${accent ? "text-white" : "text-[#0f4d2e]"} w-4 h-4 md:w-5 md:h-5`} />
       </div>
       <div>
-        <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accent ? "text-[#f5e7c2]" : "text-[#6b3e1f]"}`}>{title}</p>
-        <p className={`font-semibold text-base mt-1 ${accent ? "text-white" : "text-[#0a331e]"}`}>{value}</p>
+        <p className={`text-[9px] md:text-[10px] font-bold uppercase tracking-widest md:tracking-[0.22em] ${accent ? "text-[#f5e7c2]" : "text-[#6b3e1f]"}`}>{title}</p>
+        <p className={`font-semibold text-sm md:text-base mt-0.5 md:mt-1 ${accent ? "text-white" : "text-[#0a331e]"}`}>{value}</p>
       </div>
     </>
   );
