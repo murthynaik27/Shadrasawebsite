@@ -41,7 +41,7 @@ export default function WhyUs() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
           {items.map((it, i) => {
             const Icon = it.icon;
             return (
@@ -52,13 +52,13 @@ export default function WhyUs() {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: i * 0.06 }}
                 data-testid={`why-card-${i}`}
-                className="group rounded-2xl bg-[#fdfbf7] p-7 border border-[#6b3e1f]/10 hover:border-[#d4a017]/40 hover:bg-white transition-all duration-300 hover:-translate-y-1 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(15,77,46,0.08)]"
+                className="group rounded-xl md:rounded-2xl bg-[#fdfbf7] p-4 md:p-7 border border-[#6b3e1f]/10 hover:border-[#d4a017]/40 hover:bg-white transition-all duration-300 hover:-translate-y-1 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(15,77,46,0.08)] flex flex-col"
               >
-                <div className="h-14 w-14 rounded-2xl bg-[#0f4d2e] flex items-center justify-center mb-5 group-hover:bg-[#d4a017] transition-colors duration-300">
-                  <Icon size={24} className="text-[#d4a017] group-hover:text-white transition-colors" strokeWidth={1.6} />
+                <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-[#0f4d2e] flex items-center justify-center mb-3 md:mb-5 group-hover:bg-[#d4a017] transition-colors duration-300">
+                  <Icon className="text-[#d4a017] group-hover:text-white transition-colors w-5 h-5 md:w-6 md:h-6" strokeWidth={1.6} />
                 </div>
-                <h3 className="font-display text-xl font-semibold text-[#0a331e] mb-2">{it.title}</h3>
-                <p className="text-sm text-[#4a453f] leading-relaxed">{it.desc}</p>
+                <h3 className="font-display text-sm md:text-xl font-semibold text-[#0a331e] mb-1.5 md:mb-2 line-clamp-2 leading-snug">{it.title}</h3>
+                <p className="text-[11px] md:text-sm text-[#4a453f] leading-relaxed flex-1">{it.desc}</p>
               </motion.div>
             );
           })}
