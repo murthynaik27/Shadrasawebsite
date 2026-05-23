@@ -92,12 +92,14 @@ export default function Navbar() {
     }
   };
 
+  const isSolid = scrolled || location.pathname !== "/";
+
   return (
     <header
       data-testid="main-navbar"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-white/85 backdrop-blur-xl border-b border-[#0f4d2e]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+        isSolid
+          ? "bg-white/90 backdrop-blur-xl border-b border-[#0f4d2e]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
           : "bg-transparent"
       }`}
     >
@@ -107,14 +109,14 @@ export default function Navbar() {
           <div className="hidden sm:flex flex-col leading-tight">
             <span
               className={`font-display text-2xl font-bold ${
-                scrolled ? "text-[#0a331e]" : "text-white"
+                isSolid ? "text-[#0a331e]" : "text-white"
               }`}
             >
               Shadrasa
             </span>
             <span
               className={`text-[10px] tracking-[0.25em] uppercase font-semibold ${
-                scrolled ? "text-[#6b3e1f]" : "text-[#f5e7c2]"
+                isSolid ? "text-[#6b3e1f]" : "text-[#f5e7c2]"
               }`}
             >
               Authentic Taste
@@ -132,7 +134,7 @@ export default function Navbar() {
               className={`text-sm font-medium transition-colors hover:text-[#d4a017] ${
                 activeSection === l.href.substring(1)
                   ? "text-[#d4a017]"
-                  : scrolled
+                  : isSolid
                   ? "text-[#0a331e]"
                   : "text-white"
               }`}
@@ -180,7 +182,7 @@ export default function Navbar() {
           <button
             data-testid="navbar-mobile-toggle"
             onClick={() => setOpen(!open)}
-            className={`p-2 rounded-md ${scrolled ? "text-[#0a331e]" : "text-white"}`}
+            className={`p-2 rounded-md ${isSolid ? "text-[#0a331e]" : "text-white"}`}
             aria-label="Toggle menu"
             aria-expanded={open}
           >
