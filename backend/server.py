@@ -177,6 +177,14 @@ class CategoryIn(BaseModel):
     sort_order: int = 0
 
 
+class WeightOptionIn(BaseModel):
+    weight: float
+    unit: str
+    price: float
+    sale_price: Optional[float] = None
+    stock: int = 0
+
+
 class ProductIn(BaseModel):
     name: str = Field(..., min_length=1, max_length=160)
     tagline: Optional[str] = Field(None, max_length=160)
@@ -189,6 +197,7 @@ class ProductIn(BaseModel):
     stock: int = 0
     weight: Optional[float] = None
     unit: Optional[str] = None
+    weight_options: List[WeightOptionIn] = []
     image: Optional[str] = None  # base64 data URL
     blur_image: Optional[str] = None
     is_featured: bool = False
@@ -238,6 +247,8 @@ class OrderItemIn(BaseModel):
     image: Optional[str] = None
     price: float
     quantity: int = Field(..., ge=1)
+    weight: Optional[float] = None
+    unit: Optional[str] = None
 
 
 class OrderIn(BaseModel):
@@ -449,9 +460,21 @@ async def create_order(data: OrderIn):
         prod = db.products.find_one({"id": it.product_id, "is_active": True}, {"_id": 0})
         if not prod:
             raise HTTPException(400, f"Product unavailable: {it.name}")
-        if prod.get("stock", 0) < it.quantity:
-            raise HTTPException(400, f"Insufficient stock for {prod['name']}")
+        
+        # Determine the price and stock based on weight options if selected
         unit_price = float(prod.get("sale_price") or prod.get("price") or 0)
+        stock_available = prod.get("stock", 0)
+        
+        if it.weight and it.unit and prod.get("weight_options"):
+            for opt in prod["weight_options"]:
+                if opt["weight"] == it.weight and opt["unit"] == it.unit:
+                    unit_price = float(opt.get("sale_price") or opt.get("price") or 0)
+                    stock_available = opt.get("stock", 0)
+                    break
+
+        if stock_available < it.quantity:
+            raise HTTPException(400, f"Insufficient stock for {prod['name']}")
+        
         line_total = unit_price * it.quantity
         subtotal += line_total
         items_validated.append({
@@ -460,6 +483,8 @@ async def create_order(data: OrderIn):
             "image": prod.get("image"),
             "price": unit_price,
             "quantity": it.quantity,
+            "weight": it.weight,
+            "unit": it.unit,
             "line_total": line_total,
         })
     shipping = 0.0  # free shipping default
@@ -496,10 +521,17 @@ async def create_order(data: OrderIn):
 
     # Decrement stock
     for it in items_validated:
-        db.products.update_one(
-            {"id": it["product_id"]},
-            {"$inc": {"stock": -it["quantity"]}},
-        )
+        if it.get("weight") and it.get("unit"):
+            # Also decrement main stock for overall inventory tracking
+            db.products.update_one(
+                {"id": it["product_id"], "weight_options.weight": it["weight"], "weight_options.unit": it["unit"]},
+                {"$inc": {"weight_options.$.stock": -it["quantity"], "stock": -it["quantity"]}}
+            )
+        else:
+            db.products.update_one(
+                {"id": it["product_id"]},
+                {"$inc": {"stock": -it["quantity"]}},
+            )
 
     # Send email notification (gracefully skipped if no key)
     rows = "".join(
@@ -1026,6 +1058,12 @@ async def list_products(user: dict = Depends(get_current_user)):
 async def create_product(data: ProductIn, user: dict = Depends(get_current_user)):
     payload = data.model_dump()
     
+    if payload.get("weight_options"):
+        # Auto-calculate main price and stock from options
+        payload["price"] = payload["weight_options"][0]["price"]
+        payload["sale_price"] = payload["weight_options"][0].get("sale_price")
+        payload["stock"] = sum(opt.get("stock", 0) for opt in payload["weight_options"])
+        
     if payload.get("image"):
         processed = process_and_save_image(payload["image"], prefix="prod")
         payload["image"] = processed["url"]
@@ -1051,6 +1089,12 @@ async def create_product(data: ProductIn, user: dict = Depends(get_current_user)
 async def update_product(pid: str, data: ProductIn, user: dict = Depends(get_current_user)):
     payload = data.model_dump()
     
+    if payload.get("weight_options"):
+        # Auto-calculate main price and stock from options
+        payload["price"] = payload["weight_options"][0]["price"]
+        payload["sale_price"] = payload["weight_options"][0].get("sale_price")
+        payload["stock"] = sum(opt.get("stock", 0) for opt in payload["weight_options"])
+
     if payload.get("image") and payload["image"].startswith("data:image"):
         processed = process_and_save_image(payload["image"], prefix="prod")
         payload["image"] = processed["url"]

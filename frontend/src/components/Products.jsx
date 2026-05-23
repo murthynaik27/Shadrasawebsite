@@ -11,7 +11,15 @@ export default function Products({ products = [] }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState({});
   const { add } = useCart();
+
+  const getSelectedOption = (p) => selectedOptions[p.id] || (p.weight_options && p.weight_options[0]) || null;
+
+  const handleOptionSelect = (e, pId, opt) => {
+    e.stopPropagation();
+    setSelectedOptions(prev => ({ ...prev, [pId]: opt }));
+  };
 
   const enquire = (p) => {
     setActive(p);
@@ -34,11 +42,13 @@ export default function Products({ products = [] }) {
 
   const addToCart = (e, p) => {
     e.stopPropagation();
-    if (p.stock <= 0) {
+    const opt = getSelectedOption(p);
+    const stockToCheck = opt ? opt.stock : p.stock;
+    if (stockToCheck <= 0) {
       toast.error("Out of stock");
       return;
     }
-    add(p, 1);
+    add(p, 1, opt);
     toast.success(`${p.name} added to cart`);
   };
 
@@ -105,55 +115,88 @@ export default function Products({ products = [] }) {
                     </div>
                   )}
                 </div>
-                <div className="p-8 md:p-10 flex-1 flex flex-col">
-                  {p.tagline && (
-                    <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#6b3e1f] mb-3">{p.tagline}</p>
-                  )}
-                  <h3 className="font-display text-2xl md:text-3xl font-semibold text-[#0a331e] mb-3">{p.name}</h3>
-                  {p.category_name && (
-                    <span className="inline-block self-start text-[10px] uppercase tracking-[0.2em] text-[#0f4d2e] bg-[#0f4d2e]/8 px-2.5 py-1 rounded-full mb-4 font-semibold">
-                      {p.category_name}
-                    </span>
-                  )}
-                  <p className="text-[#4a453f] leading-relaxed mb-5 flex-1">{p.description}</p>
-                  <div className="flex items-end justify-between gap-4 mb-6">
-                    <div>
-                      {p.sale_price && p.sale_price < p.price ? (
-                        <>
-                          <span className="font-display text-2xl font-semibold text-[#0a331e]">{formatPrice(p.sale_price, p.currency)}</span>
-                          <span className="ml-2 text-sm line-through text-[#6b3e1f]/60">{formatPrice(p.price, p.currency)}</span>
-                        </>
-                      ) : (
-                        <span className="font-display text-2xl font-semibold text-[#0a331e]">{formatPrice(p.price, p.currency)}</span>
+                {(() => {
+                  const opt = getSelectedOption(p);
+                  const price = opt ? opt.price : p.price;
+                  const sale_price = opt ? opt.sale_price : p.sale_price;
+                  const stock = opt ? opt.stock : p.stock;
+                  const weight = opt ? opt.weight : p.weight;
+                  const unit = opt ? opt.unit : p.unit;
+
+                  return (
+                    <div className="p-8 md:p-10 flex-1 flex flex-col relative z-20">
+                      {p.tagline && (
+                        <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#6b3e1f] mb-3">{p.tagline}</p>
                       )}
-                      {p.weight && p.unit && (
-                        <span className="text-sm font-semibold text-[#6b3e1f] ml-1">/ {p.weight}{p.unit}</span>
+                      <h3 className="font-display text-2xl md:text-3xl font-semibold text-[#0a331e] mb-3">{p.name}</h3>
+                      {p.category_name && (
+                        <span className="inline-block self-start text-[10px] uppercase tracking-[0.2em] text-[#0f4d2e] bg-[#0f4d2e]/8 px-2.5 py-1 rounded-full mb-4 font-semibold">
+                          {p.category_name}
+                        </span>
                       )}
+                      <p className="text-[#4a453f] leading-relaxed mb-5 flex-1">{p.description}</p>
+                      
+                      {p.weight_options && p.weight_options.length > 0 && (
+                        <div className="mb-5 flex flex-wrap gap-2">
+                          {p.weight_options.map((wOpt, idx) => {
+                            const isSelected = opt && opt.weight === wOpt.weight && opt.unit === wOpt.unit;
+                            return (
+                              <button
+                                key={idx}
+                                onClick={(e) => handleOptionSelect(e, p.id, wOpt)}
+                                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                                  isSelected 
+                                    ? "bg-[#0f4d2e] border-[#0f4d2e] text-white shadow-md" 
+                                    : "bg-white border-[#6b3e1f]/20 text-[#0a331e] hover:border-[#0f4d2e] hover:text-[#0f4d2e]"
+                                }`}
+                              >
+                                {wOpt.weight}{wOpt.unit}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      <div className="flex items-end justify-between gap-4 mb-6">
+                        <div>
+                          {sale_price && sale_price < price ? (
+                            <>
+                              <span className="font-display text-2xl font-semibold text-[#0a331e]">{formatPrice(sale_price, p.currency)}</span>
+                              <span className="ml-2 text-sm line-through text-[#6b3e1f]/60">{formatPrice(price, p.currency)}</span>
+                            </>
+                          ) : (
+                            <span className="font-display text-2xl font-semibold text-[#0a331e]">{formatPrice(price, p.currency)}</span>
+                          )}
+                          {weight && unit && !p.weight_options && (
+                            <span className="text-sm font-semibold text-[#6b3e1f] ml-1">/ {weight}{unit}</span>
+                          )}
+                        </div>
+                        {stock > 0 && (
+                          <span className="text-xs text-[#0f4d2e] font-semibold flex items-center gap-1">
+                            <ShoppingBag size={13} /> In Stock
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-2 relative z-30">
+                        <button
+                          onClick={(e) => addToCart(e, p)}
+                          disabled={stock <= 0}
+                          data-testid={`add-cart-btn-${p.id}`}
+                          className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0f4d2e] hover:bg-[#d4a017] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full font-semibold transition-all duration-300 px-6 py-3 text-sm btn-glow"
+                        >
+                          <ShoppingCart size={15} /> Add to Cart
+                        </button>
+                        <button
+                          onClick={(e) => handleEnquireClick(e, p)}
+                          data-testid={`enquire-btn-${p.id}`}
+                          className="flex-1 inline-flex items-center justify-center gap-2 bg-white border-2 border-[#0f4d2e]/15 hover:border-[#0f4d2e] text-[#0f4d2e] rounded-full font-semibold transition-all duration-300 px-6 py-3 text-sm"
+                        >
+                          Enquire <ArrowRight size={14} />
+                        </button>
+                      </div>
                     </div>
-                    {p.stock > 0 && (
-                      <span className="text-xs text-[#0f4d2e] font-semibold flex items-center gap-1">
-                        <ShoppingBag size={13} /> In Stock
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    onClick={(e) => addToCart(e, p)}
-                    disabled={p.stock <= 0}
-                    data-testid={`add-cart-btn-${p.id}`}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0f4d2e] hover:bg-[#d4a017] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full font-semibold transition-all duration-300 px-6 py-3 text-sm btn-glow"
-                  >
-                    <ShoppingCart size={15} /> Add to Cart
-                  </button>
-                  <button
-                    onClick={(e) => handleEnquireClick(e, p)}
-                    data-testid={`enquire-btn-${p.id}`}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-white border-2 border-[#0f4d2e]/15 hover:border-[#0f4d2e] text-[#0f4d2e] rounded-full font-semibold transition-all duration-300 px-6 py-3 text-sm"
-                  >
-                    Enquire <ArrowRight size={14} />
-                  </button>
-                  </div>
-                </div>
+                  );
+                })()}
 
               </motion.div>
             ))}

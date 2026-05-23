@@ -8,8 +8,8 @@ import ImageInput, { FormShell, Label, TextInput, TextArea, EmptyState } from ".
 import OptimizedImage from "../../components/ui/OptimizedImage";
 
 const EMPTY = {
-  name: "", tagline: "", description: "", category_id: "", price: 0, sale_price: null,
-  currency: "INR", stock: 0, weight: "", unit: "g", image: "", premium_badge: "Premium Batch",
+  name: "", tagline: "", description: "", category_id: "", 
+  weight_options: [], image: "", premium_badge: "Premium Batch",
   is_featured: false, is_active: true, sort_order: 0,
 };
 
@@ -35,7 +35,7 @@ export default function AdminProducts() {
   const startNew = () => { setEditing("new"); setForm(EMPTY); };
   const startEdit = (p) => {
     setEditing(p.id);
-    setForm({ ...EMPTY, ...p, sale_price: p.sale_price ?? null, weight: p.weight ?? "", unit: p.unit ?? "g" });
+    setForm({ ...EMPTY, ...p, weight_options: p.weight_options || [] });
   };
   const close = () => { setEditing(null); setForm(EMPTY); };
 
@@ -54,11 +54,14 @@ export default function AdminProducts() {
     try {
       const payload = {
         ...form,
-        price: Number(form.price) || 0,
-        sale_price: form.sale_price ? Number(form.sale_price) : null,
-        stock: Number(form.stock) || 0,
-        weight: form.weight ? Number(form.weight) : null,
         sort_order: Number(form.sort_order) || 0,
+        weight_options: (form.weight_options || []).map(opt => ({
+          ...opt,
+          weight: Number(opt.weight) || 0,
+          price: Number(opt.price) || 0,
+          sale_price: opt.sale_price ? Number(opt.sale_price) : null,
+          stock: Number(opt.stock) || 0,
+        }))
       };
       if (editing === "new") {
         await apiClient.post("/admin/products", payload, { headers: authHeaders() });
@@ -159,8 +162,9 @@ export default function AdminProducts() {
                 <p className="text-sm text-[#4a453f] line-clamp-2 flex-1">{p.description}</p>
                 <div className="mt-3 flex items-center justify-between">
                   <p className="font-semibold text-[#0f4d2e]">
-                    {formatPrice(p.price, p.currency)}
-                    {p.weight && p.unit && ` / ${p.weight}${p.unit}`}
+                    {p.weight_options && p.weight_options.length > 0 
+                      ? `${formatPrice(p.weight_options[0].price, p.currency)} (${p.weight_options.length} options)` 
+                      : formatPrice(p.price, p.currency)}
                   </p>
                   <p className="text-xs text-[#6b3e1f]">Stock: {p.stock}</p>
                 </div>
@@ -205,32 +209,51 @@ export default function AdminProducts() {
               <TextInput value={form.premium_badge || ""} onChange={(e) => setForm({ ...form, premium_badge: e.target.value })} placeholder="e.g. Premium Batch" />
             </label>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-            <label className="block">
-              <Label>Price (₹) *</Label>
-              <TextInput type="number" min="0" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} data-testid="pf-price" />
-            </label>
-            <label className="block">
-              <Label>Sale Price (₹)</Label>
-              <TextInput type="number" min="0" value={form.sale_price ?? ""} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} />
-            </label>
-            <label className="block">
-              <Label>Stock *</Label>
-              <TextInput type="number" min="0" required value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} data-testid="pf-stock" />
-            </label>
-            <label className="block">
-              <Label>Weight</Label>
-              <TextInput type="number" min="0" step="any" value={form.weight ?? ""} onChange={(e) => setForm({ ...form, weight: e.target.value })} placeholder="e.g. 500" />
-            </label>
-            <label className="block">
-              <Label>Unit</Label>
-              <select value={form.unit || "g"} onChange={(e) => setForm({ ...form, unit: e.target.value })} className="w-full rounded-xl border border-[#6b3e1f]/20 px-4 py-2.5 text-sm bg-[#fdfbf7]">
-                <option value="g">Gram (g)</option>
-                <option value="kg">Kilogram (kg)</option>
-                <option value="ml">Milliliter (ml)</option>
-                <option value="L">Liter (L)</option>
-              </select>
-            </label>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label>Weight Options *</Label>
+              <button type="button" onClick={() => setForm({ ...form, weight_options: [...(form.weight_options || []), { weight: "", unit: "g", price: 0, sale_price: "", stock: 0 }] })} className="text-xs bg-[#0f4d2e]/10 text-[#0f4d2e] px-3 py-1.5 rounded-full font-semibold hover:bg-[#0f4d2e]/20 transition-colors">
+                + Add Option
+              </button>
+            </div>
+            {(form.weight_options || []).length === 0 ? (
+              <p className="text-sm text-red-500 bg-red-50 p-3 rounded-xl border border-red-100">At least one weight option is required.</p>
+            ) : (
+              <div className="space-y-3">
+                {form.weight_options.map((opt, idx) => (
+                  <div key={idx} className="flex flex-wrap items-end gap-3 p-4 bg-[#fdfbf7] border border-[#6b3e1f]/10 rounded-xl relative group">
+                    <button type="button" onClick={() => setForm({ ...form, weight_options: form.weight_options.filter((_, i) => i !== idx) })} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-200">
+                      <Trash2 size={12} />
+                    </button>
+                    <label className="flex-1 min-w-[80px]">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Weight</span>
+                      <TextInput type="number" min="0" step="any" required value={opt.weight} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].weight = e.target.value; setForm({ ...form, weight_options: newOpts }); }} placeholder="500" />
+                    </label>
+                    <label className="w-24">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Unit</span>
+                      <select value={opt.unit || "g"} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].unit = e.target.value; setForm({ ...form, weight_options: newOpts }); }} className="w-full rounded-xl border border-[#6b3e1f]/20 px-3 py-[9px] text-sm bg-white">
+                        <option value="g">g</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L</option>
+                      </select>
+                    </label>
+                    <label className="flex-1 min-w-[80px]">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Price (₹)</span>
+                      <TextInput type="number" min="0" required value={opt.price} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].price = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
+                    </label>
+                    <label className="flex-1 min-w-[80px]">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Sale (₹)</span>
+                      <TextInput type="number" min="0" value={opt.sale_price ?? ""} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].sale_price = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
+                    </label>
+                    <label className="w-24">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Stock</span>
+                      <TextInput type="number" min="0" required value={opt.stock} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].stock = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <ImageInput value={form.image} onChange={(v) => setForm({ ...form, image: v })} label="Product Image" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

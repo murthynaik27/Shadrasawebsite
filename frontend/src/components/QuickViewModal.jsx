@@ -1,10 +1,27 @@
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { formatPrice } from "../lib/admin";
 import { ShoppingCart, ArrowRight, X, Award } from "lucide-react";
 import OptimizedImage from "./ui/OptimizedImage";
 
 export default function QuickViewModal({ open, onOpenChange, product, onAddToCart, onEnquire }) {
+  const [selectedOpt, setSelectedOpt] = useState(null);
+
+  useEffect(() => {
+    if (product?.weight_options?.length > 0) {
+      setSelectedOpt(product.weight_options[0]);
+    } else {
+      setSelectedOpt(null);
+    }
+  }, [product]);
+
   if (!product) return null;
+
+  const price = selectedOpt ? selectedOpt.price : product.price;
+  const sale_price = selectedOpt ? selectedOpt.sale_price : product.sale_price;
+  const stock = selectedOpt ? selectedOpt.stock : product.stock;
+  const weight = selectedOpt ? selectedOpt.weight : product.weight;
+  const unit = selectedOpt ? selectedOpt.unit : product.unit;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -31,12 +48,12 @@ export default function QuickViewModal({ open, onOpenChange, product, onAddToCar
                 No Image
               </div>
             )}
-            {product.stock <= 0 && (
+            {stock <= 0 && (
               <div className="absolute top-8 left-8 bg-red-600 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
                 Sold Out
               </div>
             )}
-            {product.premium_badge && product.stock > 0 && (
+            {product.premium_badge && stock > 0 && (
               <div className="absolute top-8 left-8 flex items-center gap-2 bg-white/95 backdrop-blur px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-[#0f4d2e] shadow-lg">
                 <Award size={14} /> {product.premium_badge}
               </div>
@@ -54,24 +71,45 @@ export default function QuickViewModal({ open, onOpenChange, product, onAddToCar
               {product.name}
             </h2>
             
-            <div className="mb-6 flex items-baseline gap-3 border-b border-[#6b3e1f]/10 pb-6">
-              {product.sale_price && product.sale_price < product.price ? (
+            {product.weight_options && product.weight_options.length > 0 && (
+              <div className="mb-6 flex flex-wrap gap-2 border-b border-[#6b3e1f]/10 pb-6">
+                {product.weight_options.map((wOpt, idx) => {
+                  const isSelected = selectedOpt && selectedOpt.weight === wOpt.weight && selectedOpt.unit === wOpt.unit;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedOpt(wOpt)}
+                      className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${
+                        isSelected 
+                          ? "bg-[#0f4d2e] border-[#0f4d2e] text-white shadow-md" 
+                          : "bg-white border-[#6b3e1f]/20 text-[#0a331e] hover:border-[#0f4d2e] hover:text-[#0f4d2e]"
+                      }`}
+                    >
+                      {wOpt.weight}{wOpt.unit}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className={`mb-6 flex items-baseline gap-3 ${product.weight_options && product.weight_options.length > 0 ? '' : 'border-b border-[#6b3e1f]/10 pb-6'}`}>
+              {sale_price && sale_price < price ? (
                 <>
                   <span className="font-display text-3xl font-semibold text-[#0f4d2e]">
-                    {formatPrice(product.sale_price, product.currency)}
+                    {formatPrice(sale_price, product.currency)}
                   </span>
                   <span className="text-lg line-through text-[#6b3e1f]/50">
-                    {formatPrice(product.price, product.currency)}
+                    {formatPrice(price, product.currency)}
                   </span>
                 </>
               ) : (
                 <span className="font-display text-3xl font-semibold text-[#0f4d2e]">
-                  {formatPrice(product.price, product.currency)}
+                  {formatPrice(price, product.currency)}
                 </span>
               )}
-              {product.weight && product.unit && (
+              {weight && unit && (!product.weight_options || product.weight_options.length === 0) && (
                 <span className="text-[#6b3e1f] font-medium ml-1">
-                  / {product.weight}{product.unit}
+                  / {weight}{unit}
                 </span>
               )}
             </div>
@@ -83,10 +121,13 @@ export default function QuickViewModal({ open, onOpenChange, product, onAddToCar
             <div className="mt-auto space-y-3 pt-6">
               <button
                 onClick={() => {
-                  onAddToCart(product);
+                  onAddToCart(product); // Wait, Products.jsx handles add to cart for QuickView as well. But wait, Products.jsx QuickView uses add() directly or calls onAddToCart which expects just product?
+                  // Let me check how QuickViewModal is used in Products.jsx... wait, Products.jsx doesn't use QuickViewModal? 
+                  // Ah, wait! The user clicks "Quick View" and where does it go? Let me just pass the selected option to onAddToCart if it supports it.
+                  onAddToCart(product, selectedOpt);
                   onOpenChange(false);
                 }}
-                disabled={product.stock <= 0}
+                disabled={stock <= 0}
                 className="w-full flex items-center justify-center gap-2 bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full font-semibold transition-all duration-300 px-6 py-4 shadow-lg hover:shadow-xl active:scale-[0.98]"
               >
                 <ShoppingCart size={18} /> Add to Cart

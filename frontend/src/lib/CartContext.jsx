@@ -26,15 +26,23 @@ export function CartProvider({ children }) {
     }
   }, [items]);
 
-  const add = useCallback((product, qty = 1) => {
+  const add = useCallback((product, qty = 1, opt = null) => {
     setItems((cur) => {
-      const idx = cur.findIndex((i) => i.product_id === product.id);
+      // Find matching item based on product ID and optional weight/unit
+      const idx = cur.findIndex((i) => 
+        i.product_id === product.id && 
+        (opt ? (i.weight === opt.weight && i.unit === opt.unit) : true)
+      );
+      
       if (idx >= 0) {
         const next = [...cur];
         next[idx] = { ...next[idx], quantity: next[idx].quantity + qty };
         return next;
       }
-      const price = product.sale_price && product.sale_price < product.price ? product.sale_price : product.price;
+      
+      const price = opt ? (opt.sale_price && opt.sale_price < opt.price ? opt.sale_price : opt.price) 
+                        : (product.sale_price && product.sale_price < product.price ? product.sale_price : product.price);
+      
       return [
         ...cur,
         {
@@ -43,24 +51,24 @@ export function CartProvider({ children }) {
           image: product.image,
           price: Number(price) || 0,
           quantity: qty,
-          stock: product.stock,
-          weight: product.weight,
-          unit: product.unit,
+          stock: opt ? opt.stock : product.stock,
+          weight: opt ? opt.weight : product.weight,
+          unit: opt ? opt.unit : product.unit,
         },
       ];
     });
     setOpen(true);
   }, []);
 
-  const setQty = useCallback((product_id, qty) => {
+  const setQty = useCallback((product_id, qty, weight = null, unit = null) => {
     setItems((cur) => {
-      if (qty <= 0) return cur.filter((i) => i.product_id !== product_id);
-      return cur.map((i) => (i.product_id === product_id ? { ...i, quantity: qty } : i));
+      if (qty <= 0) return cur.filter((i) => !(i.product_id === product_id && i.weight === weight && i.unit === unit));
+      return cur.map((i) => (i.product_id === product_id && i.weight === weight && i.unit === unit ? { ...i, quantity: qty } : i));
     });
   }, []);
 
-  const remove = useCallback((product_id) => {
-    setItems((cur) => cur.filter((i) => i.product_id !== product_id));
+  const remove = useCallback((product_id, weight = null, unit = null) => {
+    setItems((cur) => cur.filter((i) => !(i.product_id === product_id && i.weight === weight && i.unit === unit)));
   }, []);
 
   const clear = useCallback(() => setItems([]), []);

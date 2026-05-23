@@ -99,7 +99,7 @@ export default function CartDrawer() {
                     <div className="flex items-center justify-between mt-3 sm:mt-4">
                       <div className="flex items-center bg-[#fdfbf7] rounded-full border border-[#6b3e1f]/15 p-1">
                         <button
-                          onClick={() => setQty(i.product_id, i.quantity - 1)}
+                          onClick={() => setQty(i.product_id, i.quantity - 1, i.weight, i.unit)}
                           data-testid={`qty-dec-${i.product_id}`}
                           className="h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center text-[#0a331e] hover:bg-[#0f4d2e] hover:text-white rounded-full transition-colors"
                         >
@@ -109,7 +109,7 @@ export default function CartDrawer() {
                           {i.quantity}
                         </span>
                         <button
-                          onClick={() => setQty(i.product_id, i.quantity + 1)}
+                          onClick={() => setQty(i.product_id, i.quantity + 1, i.weight, i.unit)}
                           data-testid={`qty-inc-${i.product_id}`}
                           className="h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center text-[#0a331e] hover:bg-[#0f4d2e] hover:text-white rounded-full transition-colors"
                         >
@@ -121,7 +121,7 @@ export default function CartDrawer() {
 
                   {/* Remove Button - Top Right Absolute */}
                   <button
-                    onClick={() => remove(i.product_id)}
+                    onClick={() => remove(i.product_id, i.weight, i.unit)}
                     data-testid={`cart-remove-${i.product_id}`}
                     className="absolute top-2 right-2 sm:top-4 sm:right-4 h-8 w-8 flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors opacity-80 hover:opacity-100"
                     aria-label="Remove item"

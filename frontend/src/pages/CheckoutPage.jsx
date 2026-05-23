@@ -59,13 +59,15 @@ export default function CheckoutPage() {
           image: i.image,
           price: i.price,
           quantity: i.quantity,
+          weight: i.weight,
+          unit: i.unit,
         })),
       };
       const { data } = await apiClient.post("/orders", payload);
       toast.success(`Order placed! ${data.order_no}`);
 
       // Build WhatsApp message
-      const lines = items.map((i) => `• ${i.name} × ${i.quantity} — ₹${i.price * i.quantity}`).join("\n");
+      const lines = items.map((i) => `• ${i.name} ${i.weight && i.unit ? `(${i.weight}${i.unit})` : ''} × ${i.quantity} — ₹${i.price * i.quantity}`).join("\n");
       const text = `Hi Shadrasa! I just placed order *${data.order_no}*\n\n${lines}\n\n*Total: ₹${data.total}*\nPayment: ${form.payment_method.toUpperCase()}\n\nName: ${form.customer_name}\nPhone: ${form.customer_phone}\nAddress: ${form.address_line1}, ${form.city} - ${form.pincode}`;
       const wa = content.whatsapp_number || "917338542117";
       window.open(buildWhatsappFromNumber(wa, text), "_blank");
@@ -180,8 +182,8 @@ export default function CheckoutPage() {
               <div className="sticky top-28 rounded-3xl bg-white border border-[#6b3e1f]/10 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 <h3 className="font-display text-xl font-semibold text-[#0a331e] mb-4">Order Summary</h3>
                 <ul className="space-y-3 mb-5 max-h-64 overflow-y-auto">
-                  {items.map((i) => (
-                    <li key={i.product_id} className="flex gap-3 items-center">
+                  {items.map((i, idx) => (
+                    <li key={`${i.product_id}-${idx}`} className="flex gap-3 items-center">
                       <img src={getImageUrl(i.image)} alt={i.name} className="h-14 w-14 rounded-lg object-cover" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-[#0a331e] line-clamp-1">
