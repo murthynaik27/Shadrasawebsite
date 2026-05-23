@@ -25,7 +25,7 @@ export default function Testimonials({ reviews = [] }) {
   };
 
   return (
-    <section data-testid="testimonials-section" className="py-24 md:py-32 bg-white overflow-hidden">
+    <section data-testid="testimonials-section" className="py-12 md:py-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -35,7 +35,7 @@ export default function Testimonials({ reviews = [] }) {
           className="text-center mb-16 md:mb-20"
         >
           <p className="divider-ornament mb-4">Loved By Families</p>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-[#0a331e] tracking-tight mb-8">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-[#0a331e] tracking-tight mb-6 md:mb-8">
             What our <span className="italic text-[#d4a017]">customers</span> say
           </h2>
           <button 
@@ -57,7 +57,7 @@ export default function Testimonials({ reviews = [] }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: Math.min(i * 0.12, 0.6) }}
-                className="relative shrink-0 w-[85vw] sm:w-[400px] snap-center rounded-3xl bg-[#fdfbf7] p-8 md:p-10 border border-[#6b3e1f]/10 hover:border-[#d4a017]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-10px_rgba(15,77,46,0.12)] flex flex-col"
+                className="relative shrink-0 w-[85vw] sm:w-[400px] snap-center rounded-2xl md:rounded-3xl bg-[#fdfbf7] p-6 md:p-10 border border-[#6b3e1f]/10 hover:border-[#d4a017]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-10px_rgba(15,77,46,0.12)] flex flex-col"
               >
                 <Quote size={36} className="text-[#d4a017]/35 mb-5" />
                 <div className="flex gap-1 mb-4">

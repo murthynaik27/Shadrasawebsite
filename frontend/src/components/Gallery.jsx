@@ -7,7 +7,7 @@ export default function Gallery({ gallery = [] }) {
 
   if (!gallery || gallery.length === 0) return null;
   return (
-    <section id="gallery" data-testid="gallery-section" className="py-24 md:py-32 bg-white">
+    <section id="gallery" data-testid="gallery-section" className="py-12 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -17,12 +17,12 @@ export default function Gallery({ gallery = [] }) {
           className="text-center mb-16 md:mb-20"
         >
           <p className="divider-ornament mb-4">Glimpses of Shadrasa</p>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-[#0a331e] tracking-tight">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-[#0a331e] tracking-tight">
             Our <span className="italic text-[#d4a017]">Gallery</span>
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] md:auto-rows-[220px] gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[160px] sm:auto-rows-[180px] md:auto-rows-[220px] gap-2 md:gap-4">
           {gallery.map((item, i) => {
             // make the first one span larger dynamically, or just use grid automatically
             const span = i === 0 ? "md:col-span-2 md:row-span-2" : (i === 5 ? "md:col-span-2" : "");

@@ -29,7 +29,7 @@ export default function Contact({ content = {} }) {
   };
 
   return (
-    <section id="contact" data-testid="contact-section" className="py-24 md:py-32 bg-[#fdfbf7]">
+    <section id="contact" data-testid="contact-section" className="py-12 md:py-24 bg-[#fdfbf7]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -39,7 +39,7 @@ export default function Contact({ content = {} }) {
           className="text-center mb-16 md:mb-20"
         >
           <p className="divider-ornament mb-4">Get In Touch</p>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-[#0a331e] tracking-tight">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-[#0a331e] tracking-tight">
             Connect with <span className="italic text-[#d4a017]">Shadrasa</span>
           </h2>
         </motion.div>
@@ -104,7 +104,7 @@ export default function Contact({ content = {} }) {
                 <textarea required rows={5} data-testid="contact-message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="cf-input" />
               </Field>
             </div>
-            <button type="submit" disabled={loading} data-testid="contact-submit" className="mt-6 w-full sm:w-auto bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-60 text-white rounded-full font-semibold transition-all duration-300 px-10 py-3.5 btn-glow">
+            <button type="submit" disabled={loading} data-testid="contact-submit" className="mt-6 w-full bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-60 text-white rounded-full font-semibold transition-all duration-300 px-6 py-3.5 btn-glow">
               {loading ? "Sending..." : "Send Message"}
             </button>
             <style>{`.cf-input { width:100%; border-radius:12px; border:1px solid rgba(107,62,31,0.2); padding:12px 16px; font-size:14px; outline:none; transition: all .2s; background:#fdfbf7;} .cf-input:focus { border-color:#0f4d2e; box-shadow:0 0 0 3px rgba(15,77,46,0.12); background:#fff;}`}</style>

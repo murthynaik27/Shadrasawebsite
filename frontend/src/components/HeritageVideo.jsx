@@ -17,7 +17,7 @@ export default function HeritageVideo({ content = {} }) {
     <>
       <section
       data-testid="heritage-section"
-      className="relative h-[80vh] min-h-[520px] flex items-center justify-center overflow-hidden"
+      className="relative h-[60vh] md:h-[80vh] min-h-[400px] md:min-h-[520px] flex items-center justify-center overflow-hidden"
     >
       <div
         className="absolute inset-0 bg-fixed"
@@ -37,24 +37,26 @@ export default function HeritageVideo({ content = {} }) {
         transition={{ duration: 0.9 }}
         className="relative z-10 text-center max-w-3xl px-6"
       >
-        <p className="divider-ornament mb-6 text-[#f5e7c2]">{content.heritage_eyebrow || "Experience Shadrasa"}</p>
-        <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-7 leading-tight">
+        <p className="divider-ornament mb-4 md:mb-6 text-[10px] md:text-xs text-[#f5e7c2]">{content.heritage_eyebrow || "Experience Shadrasa"}</p>
+        <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-semibold text-white mb-4 md:mb-7 leading-tight">
           {parts.slice(0, -1).join(" ")}{" "}
           <span className="italic text-[#d4a017]">{parts.slice(-1)[0]}</span>
         </h2>
-        <p className="text-white/85 text-lg md:text-xl font-light leading-relaxed mb-10 max-w-2xl mx-auto whitespace-pre-line">
+        <p className="text-white/85 text-sm md:text-xl font-light leading-relaxed mb-8 md:mb-10 max-w-2xl mx-auto whitespace-pre-line">
           {content.heritage_body}
         </p>
-        <button
-          data-testid="heritage-play-btn"
-          onClick={() => setPlaying(true)}
-          className="group inline-flex items-center gap-4 bg-white/10 backdrop-blur-md hover:bg-[#d4a017] border-2 border-white/40 hover:border-[#d4a017] text-white rounded-full pl-2 pr-7 py-2 transition-all duration-500"
-        >
-          <span className="h-12 w-12 rounded-full bg-[#d4a017] group-hover:bg-white flex items-center justify-center transition-colors">
-            <Play size={20} className="text-white group-hover:text-[#0f4d2e] ml-1" fill="currentColor" />
-          </span>
-          <span className="font-semibold tracking-wide">{content.heritage_button_label || "Watch Brand Story"}</span>
-        </button>
+        <div className="flex justify-center">
+          <button
+            data-testid="heritage-play-btn"
+            onClick={() => setPlaying(true)}
+            className="w-full sm:w-auto group inline-flex items-center gap-3 md:gap-4 bg-white/10 backdrop-blur-md hover:bg-[#d4a017] border-2 border-white/40 hover:border-[#d4a017] text-white rounded-full pl-2 pr-6 md:pr-7 py-2 transition-all duration-500"
+          >
+            <span className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-[#d4a017] group-hover:bg-white flex items-center justify-center transition-colors flex-shrink-0">
+              <Play className="text-white group-hover:text-[#0f4d2e] ml-1 w-4 h-4 md:w-5 md:h-5" fill="currentColor" />
+            </span>
+            <span className="font-semibold tracking-wide text-sm md:text-base">{content.heritage_button_label || "Watch Brand Story"}</span>
+          </button>
+        </div>
       </motion.div>
     </section>
 

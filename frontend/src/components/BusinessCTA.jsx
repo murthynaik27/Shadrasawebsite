@@ -8,14 +8,14 @@ export default function BusinessCTA({ content = {} }) {
   const phone = content.contact_phone || "+91 7338542117";
   const wa = content.whatsapp_number || "917338542117";
   return (
-    <section data-testid="business-section" className="py-24 md:py-32 bg-[#fdfbf7] relative overflow-hidden">
+    <section data-testid="business-section" className="py-12 md:py-24 bg-[#fdfbf7] relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.8 }}
-          className="relative rounded-[32px] overflow-hidden bg-[#0f4d2e] p-10 md:p-16 lg:p-20 text-center shadow-[0_30px_80px_-20px_rgba(15,77,46,0.4)]"
+          className="relative rounded-[24px] md:rounded-[32px] overflow-hidden bg-[#0f4d2e] p-8 md:p-16 lg:p-20 text-center shadow-[0_30px_80px_-20px_rgba(15,77,46,0.4)]"
         >
           <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-[#d4a017]/15 blur-3xl" />
           <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-[#d4a017]/10 blur-3xl" />
@@ -31,20 +31,20 @@ export default function BusinessCTA({ content = {} }) {
               {content.business_body}
             </p>
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="mt-8 md:mt-10 flex flex-col sm:flex-row gap-3 md:gap-4 justify-center w-full">
               <a
                 href={buildWhatsappFromNumber(wa, "Hi Shadrasa, I'd like to become a business partner.")}
                 target="_blank"
                 rel="noreferrer"
                 data-testid="business-become-partner"
-                className="inline-flex items-center justify-center gap-2 bg-[#d4a017] hover:bg-[#b88a14] text-white rounded-full font-semibold transition-all duration-300 px-8 py-4 btn-glow"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#d4a017] hover:bg-[#b88a14] text-white rounded-full font-semibold transition-all duration-300 px-6 md:px-8 py-3.5 md:py-4 btn-glow text-sm md:text-base"
               >
                 <Handshake size={18} /> Become Partner
               </a>
               <a
                 href={`tel:${phone.replace(/\s/g, "")}`}
                 data-testid="business-contact-sales"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white border-2 border-white/40 hover:border-white text-white hover:text-[#0a331e] rounded-full font-semibold transition-all duration-300 px-8 py-4"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white border-2 border-white/40 hover:border-white text-white hover:text-[#0a331e] rounded-full font-semibold transition-all duration-300 px-6 md:px-8 py-3.5 md:py-4 text-sm md:text-base"
               >
                 <Phone size={18} /> Contact Sales
               </a>

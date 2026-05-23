@@ -16,7 +16,7 @@ export default function Footer({ content = {} }) {
     { label: "Contact", href: "#contact" },
   ];
   return (
-    <footer data-testid="footer" className="bg-[#0a331e] text-white pt-20 pb-8 relative overflow-hidden">
+    <footer data-testid="footer" className="bg-[#0a331e] text-white pt-12 md:pt-20 pb-8 relative overflow-hidden">
       <div className="grain" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
