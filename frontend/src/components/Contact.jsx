@@ -44,13 +44,13 @@ export default function Contact({ content = {} }) {
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 lg:gap-12">
+        <div className="grid grid-cols-2 gap-3 md:gap-8 lg:gap-12">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7 }}
-            className="lg:col-span-2 space-y-3 md:space-y-4"
+            className="flex flex-col gap-2 md:gap-4 w-full"
           >
             <InfoCard icon={Phone} title="Call Us" value={PHONE} href={`tel:${PHONE.replace(/\s/g, "")}`} testid="info-phone" />
             <InfoCard icon={Mail} title="Email Us" value={EMAIL} href={`mailto:${EMAIL}`} testid="info-email" />
@@ -64,7 +64,7 @@ export default function Contact({ content = {} }) {
               testid="info-whatsapp"
               accent
             />
-            <div className="rounded-xl md:rounded-2xl overflow-hidden border border-[#6b3e1f]/15 h-[180px] md:h-[250px]" data-testid="map-embed">
+            <div className="rounded-xl md:rounded-2xl overflow-hidden border border-[#6b3e1f]/15 h-[120px] md:h-[250px]" data-testid="map-embed">
               <iframe
                 title="Shadrasa location"
                 className="w-full h-full"
@@ -81,11 +81,11 @@ export default function Contact({ content = {} }) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="lg:col-span-3 w-full max-w-md mx-auto lg:max-w-none rounded-2xl md:rounded-3xl bg-white p-5 md:p-10 border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+            className="w-full rounded-2xl md:rounded-3xl bg-white p-3 md:p-10 border border-[#6b3e1f]/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
             data-testid="contact-form"
           >
-            <h3 className="font-display text-xl md:text-3xl font-semibold text-[#0a331e] mb-4 md:mb-6">Send us a message</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5">
+            <h3 className="font-display text-lg md:text-3xl font-semibold text-[#0a331e] mb-3 md:mb-6">Send us a message</h3>
+            <div className="grid grid-cols-2 gap-2 md:gap-5">
               <Field label="Your Name" required>
                 <input required data-testid="contact-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="cf-input" />
               </Field>
@@ -99,15 +99,15 @@ export default function Contact({ content = {} }) {
                 <input data-testid="contact-subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="cf-input" />
               </Field>
             </div>
-            <div className="mt-3 md:mt-5">
+            <div className="mt-2 md:mt-5">
               <Field label="Message" required>
                 <textarea required data-testid="contact-message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="cf-input" />
               </Field>
             </div>
-            <button type="submit" disabled={loading} data-testid="contact-submit" className="mt-4 md:mt-6 w-full bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-60 text-white rounded-xl md:rounded-full font-semibold transition-all duration-300 h-11 md:h-12 px-6 text-sm md:text-base btn-glow">
+            <button type="submit" disabled={loading} data-testid="contact-submit" className="mt-3 md:mt-6 w-full bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-60 text-white rounded-xl md:rounded-full font-semibold transition-all duration-300 h-10 md:h-12 px-4 text-xs md:text-base btn-glow">
               {loading ? "Sending..." : "Send Message"}
             </button>
-            <style>{`.cf-input { width:100%; height:40px; border-radius:8px; border:1px solid rgba(107,62,31,0.2); padding:8px 12px; font-size:14px; outline:none; transition: all .2s; background:#fdfbf7;} textarea.cf-input { height: 96px; resize: none; padding-top:10px; } .cf-input:focus { border-color:#0f4d2e; box-shadow:0 0 0 3px rgba(15,77,46,0.12); background:#fff;} @media (min-width: 768px) { .cf-input { height:48px; border-radius:12px; padding:12px 16px; } textarea.cf-input { height: 120px; } }`}</style>
+            <style>{`.cf-input { width:100%; height:36px; border-radius:8px; border:1px solid rgba(107,62,31,0.2); padding:6px 10px; font-size:12px; outline:none; transition: all .2s; background:#fdfbf7;} textarea.cf-input { height: 80px; resize: none; padding-top:8px; } .cf-input:focus { border-color:#0f4d2e; box-shadow:0 0 0 3px rgba(15,77,46,0.12); background:#fff;} @media (min-width: 768px) { .cf-input { height:48px; border-radius:12px; padding:12px 16px; font-size:14px; } textarea.cf-input { height: 120px; padding-top:10px; } }`}</style>
           </motion.form>
         </div>
       </div>
@@ -116,17 +116,17 @@ export default function Contact({ content = {} }) {
 }
 
 function InfoCard({ icon: Icon, title, value, href, external, testid, accent }) {
-  const cls = `flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl p-3.5 md:p-5 border transition-all duration-300 ${
+  const cls = `flex items-center gap-2 md:gap-4 rounded-xl md:rounded-2xl p-2.5 md:p-5 border transition-all duration-300 ${
     accent ? "bg-[#0f4d2e] text-white border-[#0f4d2e] hover:bg-[#0a331e]" : "bg-white text-[#0a331e] border-[#6b3e1f]/10 hover:border-[#d4a017]/40"
   }`;
   const inner = (
     <>
-      <div className={`h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? "bg-[#d4a017]" : "bg-[#fdfbf7] border border-[#0f4d2e]/10"}`}>
-        <Icon className={`${accent ? "text-white" : "text-[#0f4d2e]"} w-4 h-4 md:w-5 md:h-5`} />
+      <div className={`h-8 w-8 md:h-12 md:w-12 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? "bg-[#d4a017]" : "bg-[#fdfbf7] border border-[#0f4d2e]/10"}`}>
+        <Icon className={`${accent ? "text-white" : "text-[#0f4d2e]"} w-3.5 h-3.5 md:w-5 md:h-5`} />
       </div>
-      <div>
-        <p className={`text-[9px] md:text-[10px] font-bold uppercase tracking-widest md:tracking-[0.22em] ${accent ? "text-[#f5e7c2]" : "text-[#6b3e1f]"}`}>{title}</p>
-        <p className={`font-semibold text-sm md:text-base mt-0.5 md:mt-1 ${accent ? "text-white" : "text-[#0a331e]"}`}>{value}</p>
+      <div className="min-w-0 flex-1">
+        <p className={`text-[8px] md:text-[10px] font-bold uppercase tracking-widest md:tracking-[0.22em] ${accent ? "text-[#f5e7c2]" : "text-[#6b3e1f]"}`}>{title}</p>
+        <p className={`font-semibold text-[10px] md:text-base mt-0.5 md:mt-1 break-all leading-tight ${accent ? "text-white" : "text-[#0a331e]"}`}>{value}</p>
       </div>
     </>
   );
@@ -140,7 +140,7 @@ function InfoCard({ icon: Icon, title, value, href, external, testid, accent }) 
 function Field({ label, required, children }) {
   return (
     <label className="block">
-      <span className="block text-[11px] md:text-xs font-bold uppercase tracking-wider md:tracking-[0.18em] text-[#6b3e1f] mb-1.5 md:mb-2">
+      <span className="block text-[9px] md:text-xs font-bold uppercase tracking-widest md:tracking-[0.18em] text-[#6b3e1f] mb-1.5 md:mb-2">
         {label} {required && <span className="text-[#d4a017]">*</span>}
       </span>
       {children}
