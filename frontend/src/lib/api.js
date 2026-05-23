@@ -35,6 +35,16 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
+apiClient.interceptors.request.use((config) => {
+  if (isBrowser) {
+    const token = localStorage.getItem("shadrasa_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 export function formatApiError(detail) {
   if (detail == null) return "Something went wrong. Please try again.";
   if (typeof detail === "string") return detail;
