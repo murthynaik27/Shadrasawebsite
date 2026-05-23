@@ -22,7 +22,15 @@ export default function CategoryPage() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState({});
   const { add } = useCart();
+
+  const getSelectedOption = (p) => selectedOptions[p.id] || (p.weight_options && p.weight_options[0]) || null;
+
+  const handleOptionSelect = (e, pId, opt) => {
+    e.stopPropagation();
+    setSelectedOptions(prev => ({ ...prev, [pId]: opt }));
+  };
 
   const category = categories.find(c => c.slug === slug || c.id === slug);
 
@@ -76,11 +84,13 @@ export default function CategoryPage() {
   };
 
   const addToCart = (p) => {
-    if (p.stock <= 0) {
+    const opt = getSelectedOption(p);
+    const stockToCheck = opt ? opt.stock : p.stock;
+    if (stockToCheck <= 0) {
       toast.error("Out of stock");
       return;
     }
-    add(p, 1);
+    add(p, 1, opt);
     toast.success(`${p.name} added to cart`);
   };
 
@@ -201,24 +211,58 @@ export default function CategoryPage() {
                           {renderStars(rating)}
                           <span className="text-[10px] text-[#6b3e1f] ml-1">({reviewsCount})</span>
                         </div>
-                        
-                        <div className="mb-4">
-                          {p.sale_price && p.sale_price < p.price ? (
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-[#0a331e]">{formatPrice(p.sale_price, p.currency)}</span>
-                              <span className="text-xs line-through text-[#6b3e1f]/60">{formatPrice(p.price, p.currency)}</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-[#0a331e]">{formatPrice(p.price, p.currency)}</span>
-                            </div>
-                          )}
-                        </div>
+
+                        {(() => {
+                          const opt = getSelectedOption(p);
+                          const price = opt ? opt.price : p.price;
+                          const sale_price = opt ? opt.sale_price : p.sale_price;
+                          const stock = opt ? opt.stock : p.stock;
+
+                          return (
+                            <>
+                              <div className="mb-4">
+                                {p.weight_options && p.weight_options.length > 0 && (
+                                  <div className="mb-3 flex flex-wrap gap-1.5">
+                                    {p.weight_options.map((wOpt, idx) => {
+                                      const isSelected = opt && opt.weight === wOpt.weight && opt.unit === wOpt.unit;
+                                      return (
+                                        <button
+                                          key={idx}
+                                          onClick={(e) => handleOptionSelect(e, p.id, wOpt)}
+                                          className={`px-3 py-1 rounded-full text-[10px] font-semibold transition-all border ${
+                                            isSelected 
+                                              ? "bg-[#0f4d2e] border-[#0f4d2e] text-white shadow-md" 
+                                              : "bg-white border-[#6b3e1f]/20 text-[#0a331e] hover:border-[#0f4d2e] hover:text-[#0f4d2e]"
+                                          }`}
+                                        >
+                                          {wOpt.weight}{wOpt.unit}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                                {sale_price && sale_price < price ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-[#0a331e]">{formatPrice(sale_price, p.currency)}</span>
+                                    <span className="text-xs line-through text-[#6b3e1f]/60">{formatPrice(price, p.currency)}</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-[#0a331e]">{formatPrice(price, p.currency)}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                       
                       <button
                         onClick={(e) => { e.stopPropagation(); addToCart(p); }}
-                        disabled={p.stock <= 0}
+                        disabled={(() => {
+                          const opt = getSelectedOption(p);
+                          return (opt ? opt.stock : p.stock) <= 0;
+                        })()}
                         className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-[#0f4d2e] border border-[#0f4d2e]/20 hover:bg-[#d4a017] hover:border-[#d4a017] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <ShoppingCart size={15} /> Add to Cart
