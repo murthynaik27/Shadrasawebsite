@@ -60,6 +60,7 @@ const SECTIONS = [
       { key: "contact_email", label: "Email address", type: "text" },
       { key: "contact_address", label: "Address", type: "text" },
       { key: "whatsapp_number", label: "WhatsApp number (digits only, e.g. 917338542117)", type: "text" },
+      { key: "upi_id", label: "UPI ID for Checkout (e.g. yourname@ybl)", type: "text" },
       { key: "footer_tagline", label: "Footer tagline", type: "textarea" },
     ],
   },

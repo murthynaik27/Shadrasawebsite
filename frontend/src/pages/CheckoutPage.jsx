@@ -13,7 +13,7 @@ import { buildWhatsappFromNumber } from "../lib/siteData";
 
 const PAYMENT_METHODS = [
   { id: "cod", label: "Cash on Delivery", desc: "Pay in cash when your order arrives.", icon: Banknote },
-  { id: "bank", label: "Bank Transfer / UPI", desc: "We'll share bank details after order confirmation.", icon: Wallet },
+  { id: "bank", label: "Pay via UPI", desc: "Opens PhonePe, GPay, Paytm automatically.", icon: Wallet },
   { id: "whatsapp", label: "Confirm via WhatsApp", desc: "We'll WhatsApp you to confirm and arrange payment.", icon: MessageCircle },
 ];
 
@@ -101,10 +101,22 @@ export default function CheckoutPage() {
       const lines = items.map((i) => `• ${i.name} ${i.weight && i.unit ? `(${i.weight}${i.unit})` : ''} × ${i.quantity} — ₹${i.price * i.quantity}`).join("\n");
       const text = `Hi Shadrasa! I just placed order *${data.order_no}*\n\n${lines}\n\n*Total: ₹${data.total}*\nPayment: ${form.payment_method.toUpperCase()}\n\nName: ${form.customer_name}\nPhone: ${form.customer_phone}\nAddress: ${form.address_line1}, ${form.city} - ${form.pincode}`;
       const wa = content.whatsapp_number || "917338542117";
-      window.open(buildWhatsappFromNumber(wa, text), "_blank");
-
-      clear();
-      navigate(`/order-success/${data.order_no}`);
+      
+      if (form.payment_method === "bank") {
+        const upiId = content.upi_id || "shadrasa@ybl";
+        const upiLink = `upi://pay?pa=${upiId}&pn=Shadrasa&am=${data.total}&cu=INR`;
+        window.location.href = upiLink;
+        
+        setTimeout(() => {
+          window.open(buildWhatsappFromNumber(wa, text), "_blank");
+          clear();
+          navigate(`/order-success/${data.order_no}`);
+        }, 800);
+      } else {
+        window.open(buildWhatsappFromNumber(wa, text), "_blank");
+        clear();
+        navigate(`/order-success/${data.order_no}`);
+      }
     } catch (err) {
       toast.error(formatApiError(err.response?.data?.detail) || err.message);
     } finally {
