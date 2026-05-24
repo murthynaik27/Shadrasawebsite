@@ -32,9 +32,14 @@ export default function Footer({ content = {} }) {
               {content.footer_tagline || "Bringing authentic Malenadu taste to every home — premium homemade pickles and pure natural honey, crafted with tradition from the heart of Karnataka."}
             </p>
             <div className="flex gap-3 justify-center md:justify-start w-full">
-              {[Facebook, Instagram, Youtube, Twitter].map((Ic, i) => (
-                <a key={i} href="#" data-testid={`footer-social-${i}`} aria-label="Social" className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-white/10 hover:bg-[#d4a017] flex items-center justify-center transition-colors">
-                  <Ic size={14} className="md:w-4 md:h-4" />
+              {[
+                { icon: Facebook, href: content.social_facebook },
+                { icon: Instagram, href: content.social_instagram },
+                { icon: Youtube, href: content.social_youtube },
+                { icon: Twitter, href: content.social_twitter },
+              ].map((social, i) => (
+                <a key={i} href={social.href || "#"} target={social.href ? "_blank" : undefined} rel={social.href ? "noopener noreferrer" : undefined} data-testid={`footer-social-${i}`} aria-label="Social" className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-white/10 hover:bg-[#d4a017] flex items-center justify-center transition-colors">
+                  <social.icon size={14} className="md:w-4 md:h-4" />
                 </a>
               ))}
             </div>

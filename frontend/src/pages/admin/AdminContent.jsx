@@ -63,6 +63,15 @@ const SECTIONS = [
       { key: "footer_tagline", label: "Footer tagline", type: "textarea" },
     ],
   },
+  {
+    title: "Social Links",
+    fields: [
+      { key: "social_instagram", label: "Instagram URL", type: "text" },
+      { key: "social_facebook", label: "Facebook URL", type: "text" },
+      { key: "social_youtube", label: "YouTube URL", type: "text" },
+      { key: "social_twitter", label: "Twitter / X URL", type: "text" },
+    ],
+  },
 ];
 
 export default function AdminContent() {
