@@ -1066,7 +1066,7 @@ async def delete_category(cid: str, user: dict = Depends(get_current_user)):
 # ---- Products ----
 @admin_router.get("/products")
 async def list_products(user: dict = Depends(get_current_user)):
-    return list(db.products.find({}, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).limit(500))
+    return list(db.products.find({"is_active": {"$ne": False}}, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).limit(500))
 
 
 @admin_router.post("/products", status_code=201)
@@ -1140,8 +1140,8 @@ async def update_product(pid: str, data: ProductIn, user: dict = Depends(get_cur
 
 @admin_router.delete("/products/{pid}")
 async def delete_product(pid: str, user: dict = Depends(get_current_user)):
-    res = db.products.delete_one({"id": pid})
-    if res.deleted_count == 0:
+    res = db.products.update_one({"id": pid}, {"$set": {"is_active": False}})
+    if res.matched_count == 0:
         raise HTTPException(404, "Product not found")
     return {"ok": True}
 
