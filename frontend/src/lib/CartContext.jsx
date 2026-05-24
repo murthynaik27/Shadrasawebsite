@@ -192,6 +192,7 @@ export function CartProvider({ children }) {
 
   const logoutUser = useCallback(() => {
     localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(GUEST_KEY);
     setAuth(null);
     setItems([]);
   }, []);

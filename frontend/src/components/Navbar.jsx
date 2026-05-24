@@ -17,7 +17,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
-  const { count, setOpen: openCart } = useCart();
+  const { count, setOpen: openCart, auth, logoutUser, setShowLoginModal } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -150,6 +150,21 @@ export default function Navbar() {
           >
             Get In Touch
           </a>
+          {!auth ? (
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className={`text-sm font-bold transition-colors hover:text-[#d4a017] ${isSolid ? 'text-[#0a331e]' : 'text-white'}`}
+            >
+              Login
+            </button>
+          ) : (
+            <button
+              onClick={logoutUser}
+              className={`text-sm font-bold transition-colors hover:text-red-500 ${isSolid ? 'text-[#0a331e]' : 'text-white'}`}
+            >
+              Logout
+            </button>
+          )}
           <button
             onClick={() => openCart(true)}
             data-testid="nav-cart-btn"
@@ -213,6 +228,27 @@ export default function Navbar() {
           >
             Get In Touch
           </a>
+          {!auth ? (
+            <button
+              onClick={() => {
+                setOpen(false);
+                setShowLoginModal(true);
+              }}
+              className="w-full border-2 border-[#0f4d2e] text-[#0f4d2e] bg-white text-center rounded-full font-semibold px-6 py-3 mt-3"
+            >
+              Login
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setOpen(false);
+                logoutUser();
+              }}
+              className="w-full border-2 border-red-500 text-red-500 bg-white text-center rounded-full font-semibold px-6 py-3 mt-3"
+            >
+              Logout
+            </button>
+          )}
         </div>
       )}
     </header>
