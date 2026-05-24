@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { ChevronLeft, ShoppingBag, Truck, MessageCircle, Wallet, Banknote, Check } from "lucide-react";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import LoginModal from "../components/LoginModal";
 import { useCart } from "../lib/CartContext";
 import { apiClient, formatApiError, getImageUrl } from "../lib/api";
@@ -145,7 +144,6 @@ export default function CheckoutPage() {
           <p className="text-[#6b3e1f] mt-2 mb-6">Add a few jars before checkout.</p>
           <Link to="/" className="inline-block bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-full px-6 py-3 text-sm font-semibold">Back to shop</Link>
         </div>
-        <Footer content={content} />
       </div>
     );
   }
@@ -316,7 +314,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
-      <Footer content={content} />
     </div>
   );
 }
