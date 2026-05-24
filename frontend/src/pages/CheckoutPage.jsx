@@ -23,6 +23,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState(1);
+  const [upiApp, setUpiApp] = useState("phonepe");
   
   const [form, setForm] = useState({
     customer_name: "",
@@ -105,7 +106,16 @@ export default function CheckoutPage() {
       if (form.payment_method === "bank") {
         const upiId = content.upi_id || "shadrasa@ybl";
         const bName = content.business_name || "Shadrasa";
-        const upiLink = `upi://pay?pa=${upiId}&pn=${bName}&am=${data.total}&cu=INR`;
+        let upiLink = `upi://pay?pa=${upiId}&pn=${bName}&am=${data.total}&cu=INR`;
+        
+        if (upiApp === "phonepe") {
+          upiLink = `phonepe://pay?pa=${upiId}&pn=${bName}&am=${data.total}&cu=INR`;
+        } else if (upiApp === "gpay") {
+          upiLink = `tez://upi/pay?pa=${upiId}&pn=${bName}&am=${data.total}&cu=INR`;
+        } else if (upiApp === "paytm") {
+          upiLink = `paytmmp://pay?pa=${upiId}&pn=${bName}&am=${data.total}&cu=INR`;
+        }
+
         window.location.href = upiLink;
         
         setTimeout(() => {
@@ -260,6 +270,26 @@ export default function CheckoutPage() {
                               <span className="font-semibold text-[#0a331e]">{m.label}</span>
                             </div>
                             <p className="text-xs text-[#6b3e1f] mt-1 leading-relaxed">{m.desc}</p>
+                            
+                            {form.payment_method === "bank" && m.id === "bank" && (
+                              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {[
+                                  { id: "phonepe", label: "PhonePe" },
+                                  { id: "gpay", label: "Google Pay" },
+                                  { id: "paytm", label: "Paytm" },
+                                  { id: "other", label: "Other UPI" },
+                                ].map((app) => (
+                                  <button
+                                    key={app.id}
+                                    type="button"
+                                    onClick={(e) => { e.preventDefault(); setUpiApp(app.id); }}
+                                    className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${upiApp === app.id ? 'bg-[#0f4d2e] border-[#0f4d2e] text-white shadow-sm' : 'bg-white border-[#6b3e1f]/20 text-[#0a331e] hover:border-[#0f4d2e]/40'}`}
+                                  >
+                                    {app.label}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </label>
                       ))}
