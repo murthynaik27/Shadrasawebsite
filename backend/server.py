@@ -473,7 +473,7 @@ async def get_cart(user_id: str):
     return cart["items"] if cart else []
 
 @api_router.post("/cart/{user_id}/sync")
-async def sync_cart(user_id: str, items: list):
+async def sync_cart(user_id: str, items: List[dict]):
     db.carts.update_one(
         {"user_id": user_id},
         {"$set": {"items": items}},
