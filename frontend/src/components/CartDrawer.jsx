@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "../lib/CartContext";
 import { formatPrice } from "../lib/admin";
 import { getImageUrl } from "../lib/api";
+import LoginModal from "./LoginModal";
 
 export default function CartDrawer() {
-  const { items, open, setOpen, setQty, remove, subtotal } = useCart();
+  const { items, open, setOpen, setQty, remove, subtotal, auth } = useCart();
   const navigate = useNavigate();
+  const [showLogin, setShowLogin] = useState(false);
 
   return (
     <>
@@ -144,8 +147,12 @@ export default function CartDrawer() {
             <p className="text-xs text-[#6b3e1f]/70 mb-4 sm:mb-5">Shipping & taxes calculated at checkout.</p>
             <button
               onClick={() => {
-                setOpen(false);
-                navigate("/checkout");
+                if (!auth) {
+                  setShowLogin(true);
+                } else {
+                  setOpen(false);
+                  navigate("/checkout");
+                }
               }}
               data-testid="cart-checkout-btn"
               className="w-full flex items-center justify-between bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-2xl px-5 sm:px-6 py-3.5 sm:py-4 text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group"
@@ -158,6 +165,15 @@ export default function CartDrawer() {
           </div>
         )}
       </aside>
+      <LoginModal 
+        isOpen={showLogin} 
+        onClose={() => setShowLogin(false)}
+        onSuccess={() => {
+          setShowLogin(false);
+          setOpen(false);
+          navigate("/checkout");
+        }} 
+      />
     </>
   );
 }
