@@ -47,9 +47,9 @@ export default function EnquiryDialog({ open, onOpenChange, product }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-testid="enquiry-dialog"
-        className="bg-white max-w-lg p-0 overflow-hidden border-[#0f4d2e]/15 rounded-2xl"
+        className="bg-white w-[calc(100%-24px)] max-w-[500px] p-0 overflow-hidden border border-[#0f4d2e]/15 rounded-2xl"
       >
-        <div className="bg-[#0f4d2e] text-white p-6">
+        <div className="bg-[#0f4d2e] text-white p-5 sm:p-6 text-center">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl text-white">
               Enquire — {product?.title || "Product"}
@@ -59,14 +59,14 @@ export default function EnquiryDialog({ open, onOpenChange, product }) {
             </DialogDescription>
           </DialogHeader>
         </div>
-        <form onSubmit={submit} className="p-6 space-y-4">
+        <form onSubmit={submit} className="p-4 sm:p-5 space-y-3 sm:space-y-4">
           <Field label="Full Name" required>
             <input
               required
               data-testid="enquiry-name"
               value={form.name}
               onChange={(e) => update("name", e.target.value)}
-              className="w-full rounded-lg border border-[#6b3e1f]/20 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
+              className="w-full rounded-[10px] border border-[#ccc] px-3 py-2.5 text-[14px] box-border focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
             />
           </Field>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -77,7 +77,7 @@ export default function EnquiryDialog({ open, onOpenChange, product }) {
                 data-testid="enquiry-email"
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
-                className="w-full rounded-lg border border-[#6b3e1f]/20 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
+                className="w-full rounded-[10px] border border-[#ccc] px-3 py-2.5 text-[14px] box-border focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
               />
             </Field>
             <Field label="Phone" required>
@@ -86,7 +86,7 @@ export default function EnquiryDialog({ open, onOpenChange, product }) {
                 data-testid="enquiry-phone"
                 value={form.phone}
                 onChange={(e) => update("phone", e.target.value)}
-                className="w-full rounded-lg border border-[#6b3e1f]/20 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
+                className="w-full rounded-[10px] border border-[#ccc] px-3 py-2.5 text-[14px] box-border focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
               />
             </Field>
           </div>
@@ -96,7 +96,7 @@ export default function EnquiryDialog({ open, onOpenChange, product }) {
               placeholder="e.g. 2 jars / 5 kg"
               value={form.quantity}
               onChange={(e) => update("quantity", e.target.value)}
-              className="w-full rounded-lg border border-[#6b3e1f]/20 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
+              className="w-full rounded-[10px] border border-[#ccc] px-3 py-2.5 text-[14px] box-border focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
             />
           </Field>
           <Field label="Message">
@@ -105,14 +105,14 @@ export default function EnquiryDialog({ open, onOpenChange, product }) {
               data-testid="enquiry-message"
               value={form.message}
               onChange={(e) => update("message", e.target.value)}
-              className="w-full rounded-lg border border-[#6b3e1f]/20 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
+              className="w-full rounded-[10px] min-h-[100px] border border-[#ccc] px-3 py-2.5 text-[14px] box-border focus:outline-none focus:ring-2 focus:ring-[#0f4d2e]/30 focus:border-[#0f4d2e]"
             />
           </Field>
           <button
             type="submit"
             disabled={loading}
             data-testid="enquiry-submit"
-            className="w-full bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-60 text-white rounded-full font-semibold transition-all duration-300 px-6 py-3 text-sm"
+            className="w-full bg-[#0f4d2e] hover:bg-[#0a331e] disabled:opacity-60 text-white rounded-[25px] font-semibold transition-all duration-300 px-3 py-3 text-[15px] sm:text-[16px] mt-2"
           >
             {loading ? "Sending..." : "Submit & Open WhatsApp"}
           </button>
@@ -125,7 +125,7 @@ export default function EnquiryDialog({ open, onOpenChange, product }) {
 function Field({ label, required, children }) {
   return (
     <label className="block">
-      <span className="block text-xs font-bold uppercase tracking-[0.18em] text-[#6b3e1f] mb-2">
+      <span className="block text-[12px] font-bold uppercase tracking-[1px] text-[#6b3e1f] mb-1.5 sm:mb-2">
         {label} {required && <span className="text-[#d4a017]">*</span>}
       </span>
       {children}
