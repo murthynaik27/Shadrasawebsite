@@ -173,7 +173,7 @@ export default function CategoryPage() {
                               src={displayImage}
                               blurData={displayBlur}
                               alt={p.name}
-                              className="w-full h-full object-cover rounded-xl transition-transform duration-700 ease-out group-hover:scale-110"
+                              className="w-full h-full object-contain rounded-xl transition-transform duration-700 ease-out group-hover:scale-110"
                               containerClassName="absolute inset-0"
                             />
                             {/* Glassmorphism Hover Overlay */}

@@ -1,4 +1,5 @@
 import Loader from "../components/Loader";
+import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Products from "../components/Products";
