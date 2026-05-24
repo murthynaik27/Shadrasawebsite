@@ -104,7 +104,8 @@ export default function CheckoutPage() {
       
       if (form.payment_method === "bank") {
         const upiId = content.upi_id || "shadrasa@ybl";
-        const upiLink = `upi://pay?pa=${upiId}&pn=Shadrasa&am=${data.total}&cu=INR`;
+        const bName = content.business_name || "Shadrasa";
+        const upiLink = `upi://pay?pa=${upiId}&pn=${bName}&am=${data.total}&cu=INR`;
         window.location.href = upiLink;
         
         setTimeout(() => {
