@@ -12,6 +12,7 @@ import BusinessCTA from "../components/BusinessCTA";
 import Testimonials from "../components/Testimonials";
 import Contact from "../components/Contact";
 import FloatingButtons from "../components/FloatingButtons";
+import Footer from "../components/Footer";
 import { useSiteData } from "../lib/siteData";
 
 export default function HomePage() {
@@ -33,6 +34,7 @@ export default function HomePage() {
         <Contact content={site.content} />
       </main>
       <FloatingButtons content={site.content} />
+      <Footer content={site.content} />
     </div>
   );
 }
