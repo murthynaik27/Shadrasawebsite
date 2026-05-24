@@ -474,23 +474,11 @@ async def get_cart(user_id: str):
 
 @api_router.post("/cart/{user_id}/sync")
 async def sync_cart(user_id: str, items: list):
-    existing = db.carts.find_one({"user_id": user_id})
-    
-    if existing:
-        merged = existing["items"]
-        for new_item in items:
-            found = False
-            for old in merged:
-                if old["product_id"] == new_item["product_id"] and old.get("weight") == new_item.get("weight") and old.get("unit") == new_item.get("unit"):
-                    old["quantity"] = old.get("quantity", 0) + new_item.get("quantity", 1)
-                    found = True
-            if not found:
-                merged.append(new_item)
-                
-        db.carts.update_one({"user_id": user_id}, {"$set": {"items": merged}})
-    else:
-        db.carts.insert_one({"user_id": user_id, "items": items})
-        
+    db.carts.update_one(
+        {"user_id": user_id},
+        {"$set": {"items": items}},
+        upsert=True
+    )
     return {"message": "Cart synced"}
 
 

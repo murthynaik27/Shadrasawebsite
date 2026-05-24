@@ -120,16 +120,31 @@ export function CartProvider({ children }) {
       const guestRaw = localStorage.getItem(GUEST_KEY);
       const guestCart = guestRaw ? JSON.parse(guestRaw) : [];
       
+      const res = await apiClient.get(`/cart/${authObj.userId}`);
+      let dbCart = res.data || [];
+      
       if (guestCart.length > 0) {
-        await apiClient.post(`/cart/${authObj.userId}/sync`, guestCart);
+        const merged = [...dbCart];
+        for (const new_item of guestCart) {
+          const idx = merged.findIndex(old => 
+            old.product_id === new_item.product_id && 
+            old.weight === new_item.weight && 
+            old.unit === new_item.unit
+          );
+          if (idx >= 0) {
+            merged[idx].quantity += new_item.quantity;
+          } else {
+            merged.push(new_item);
+          }
+        }
+        await apiClient.post(`/cart/${authObj.userId}/sync`, merged);
+        dbCart = merged;
       }
       
       localStorage.removeItem(GUEST_KEY);
       localStorage.setItem(AUTH_KEY, JSON.stringify(authObj));
       setAuth(authObj);
-      
-      const res = await apiClient.get(`/cart/${authObj.userId}`);
-      setItems(res.data || []);
+      setItems(dbCart);
     } catch (err) {
       console.error("Login sync failed", err);
     }
