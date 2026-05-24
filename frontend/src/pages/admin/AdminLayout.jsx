@@ -67,10 +67,10 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fdfbf7] flex" data-testid="admin-layout">
+    <div className="min-h-screen bg-[#fdfbf7] flex overflow-x-hidden" data-testid="admin-layout">
       {/* Sidebar */}
       <aside
-        className={`${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:static z-40 md:z-auto inset-y-0 left-0 w-[min(100%,18rem)] md:w-72 bg-white border-r border-[#6b3e1f]/10 transition-transform duration-300 flex flex-col print:hidden`}
+        className={`${open ? "left-0" : "-left-[260px]"} md:left-0 fixed md:sticky top-0 z-[1000] md:z-auto h-screen w-[260px] shrink-0 bg-white border-r border-[#6b3e1f]/10 transition-[left] duration-300 flex flex-col print:hidden`}
       >
         <div className="flex items-center justify-between p-6 border-b border-[#6b3e1f]/10">
           <Link to="/" className="flex items-center gap-3">
@@ -123,10 +123,10 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {open && <div className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={() => setOpen(false)} />}
+      {open && <div className="fixed inset-0 z-[999] bg-[rgba(0,0,0,0.4)] md:hidden" onClick={() => setOpen(false)} />}
 
       {/* Main */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 w-full overflow-x-hidden">
         <header className="md:hidden flex items-center justify-between bg-white border-b border-[#6b3e1f]/10 px-4 py-3 sticky top-0 z-20 print:hidden">
           <button onClick={() => setOpen(true)} className="text-[#0a331e]" aria-label="Open menu">
             <Menu size={22} />
@@ -139,7 +139,7 @@ export default function AdminLayout() {
             <LogOut size={18} />
           </button>
         </header>
-        <main className="p-6 md:p-10 print:p-0">
+        <main className="p-3 md:p-10 w-full print:p-0">
           <Outlet context={{ user }} />
         </main>
       </div>

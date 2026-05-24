@@ -29,14 +29,14 @@ export default function AdminOverview() {
       <h1 className="font-display text-3xl md:text-4xl font-semibold text-[#0a331e]">Dashboard Overview</h1>
       <p className="text-[#6b3e1f] mt-1 mb-8 text-sm">Real-time snapshot of your Shadrasa store.</p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <StatCard label="Revenue" value={formatPrice(stats?.revenue ?? 0)} icon={Wallet} color="#0f4d2e" to="/admin/orders" />
         <StatCard label="Total Orders" value={stats?.orders ?? "—"} icon={ShoppingCart} color="#d4a017" to="/admin/orders" />
         <StatCard label="Pending Orders" value={stats?.pending_orders ?? "—"} icon={ShoppingCart} color="#b45309" to="/admin/orders" />
         <StatCard label="Low Stock (≤5)" value={stats?.low_stock ?? "—"} icon={AlertTriangle} color="#b45309" to="/admin/products" />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <StatCard label="Products" value={stats?.products ?? "—"} icon={Package} color="#0f4d2e" to="/admin/products" />
         <StatCard label="Categories" value={stats?.categories ?? "—"} icon={Tags} color="#d4a017" to="/admin/categories" />
         <StatCard label="Banners" value={stats?.banners ?? "—"} icon={ImageIcon} color="#6b3e1f" to="/admin/banners" />
@@ -57,14 +57,14 @@ export default function AdminOverview() {
 
 function StatCard({ label, value, icon: Icon, color, to, link, target }) {
   const body = (
-    <div className="rounded-2xl bg-white p-5 border border-[#6b3e1f]/10 hover:border-[#d4a017]/40 transition-colors h-full">
+    <div className="rounded-[12px] bg-white p-[14px] border border-[#6b3e1f]/10 hover:border-[#d4a017]/40 transition-colors h-full">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#6b3e1f]">{label}</p>
-        <div className="h-9 w-9 rounded-lg flex items-center justify-center" style={{ background: `${color}15`, color }}>
+        <p className="text-[14px] uppercase tracking-[0.05em] font-bold text-[#6b3e1f] truncate pr-2">{label}</p>
+        <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}15`, color }}>
           <Icon size={16} />
         </div>
       </div>
-      <p className="font-display text-2xl md:text-3xl font-bold text-[#0a331e] break-words">{value}</p>
+      <p className="font-display text-[18px] md:text-[24px] font-bold text-[#0a331e] break-words">{value}</p>
     </div>
   );
   if (to) return <Link to={to} target={target}>{body}</Link>;
