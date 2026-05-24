@@ -15,6 +15,16 @@ export default function Footer({ content = {} }) {
     { label: "Why Us", href: "#why-us" },
     { label: "Contact", href: "#contact" },
   ];
+
+  const formatLink = (url) => {
+    if (!url) return "#";
+    const trimmed = url.trim();
+    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+      return "https://" + trimmed;
+    }
+    return trimmed;
+  };
+
   return (
     <footer data-testid="footer" className="bg-[#0a331e] text-white py-8 md:py-10 relative overflow-hidden">
       <div className="grain" />
@@ -37,11 +47,15 @@ export default function Footer({ content = {} }) {
                 { icon: Instagram, href: content.social_instagram },
                 { icon: Youtube, href: content.social_youtube },
                 { icon: Twitter, href: content.social_twitter },
-              ].map((social, i) => (
-                <a key={i} href={social.href || "#"} target={social.href ? "_blank" : undefined} rel={social.href ? "noopener noreferrer" : undefined} data-testid={`footer-social-${i}`} aria-label="Social" className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-white/10 hover:bg-[#d4a017] flex items-center justify-center transition-colors">
-                  <social.icon size={14} className="md:w-4 md:h-4" />
-                </a>
-              ))}
+              ].map((social, i) => {
+                const formattedHref = formatLink(social.href);
+                const isRealLink = formattedHref !== "#";
+                return (
+                  <a key={i} href={formattedHref} target={isRealLink ? "_blank" : undefined} rel={isRealLink ? "noopener noreferrer" : undefined} data-testid={`footer-social-${i}`} aria-label="Social" className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-white/10 hover:bg-[#d4a017] flex items-center justify-center transition-colors">
+                    <social.icon size={14} className="md:w-4 md:h-4" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
