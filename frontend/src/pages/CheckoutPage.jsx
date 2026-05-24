@@ -18,11 +18,10 @@ const PAYMENT_METHODS = [
 ];
 
 export default function CheckoutPage() {
-  const { items, subtotal, clear, auth } = useCart();
+  const { items, clear, subtotal, auth, setShowLoginModal } = useCart();
   const { content } = useSiteData();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [step, setStep] = useState(1);
   
   const [form, setForm] = useState({
@@ -275,11 +274,6 @@ export default function CheckoutPage() {
         </div>
       </main>
       <Footer content={content} />
-      <LoginModal 
-        isOpen={showLoginModal} 
-        onClose={() => setShowLoginModal(false)}
-        onSuccess={() => {}} 
-      />
     </div>
   );
 }

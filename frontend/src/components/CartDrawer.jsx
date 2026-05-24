@@ -7,9 +7,8 @@ import { getImageUrl } from "../lib/api";
 import LoginModal from "./LoginModal";
 
 export default function CartDrawer() {
-  const { items, open, setOpen, setQty, remove, subtotal, auth } = useCart();
+  const { items, open, setOpen, setQty, remove, subtotal, auth, setShowLoginModal } = useCart();
   const navigate = useNavigate();
-  const [showLogin, setShowLogin] = useState(false);
 
   return (
     <>
@@ -148,7 +147,8 @@ export default function CartDrawer() {
             <button
               onClick={() => {
                 if (!auth) {
-                  setShowLogin(true);
+                  setOpen(false);
+                  setShowLoginModal(true);
                 } else {
                   setOpen(false);
                   navigate("/checkout");
@@ -165,15 +165,6 @@ export default function CartDrawer() {
           </div>
         )}
       </aside>
-      <LoginModal 
-        isOpen={showLogin} 
-        onClose={() => setShowLogin(false)}
-        onSuccess={() => {
-          setShowLogin(false);
-          setOpen(false);
-          navigate("/checkout");
-        }} 
-      />
     </>
   );
 }

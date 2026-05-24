@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { apiClient } from "./api";
+import LoginModal from "../components/LoginModal";
 
 const CartCtx = createContext(null);
 const GUEST_KEY = "guestCart";
@@ -9,6 +10,8 @@ export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
   const [auth, setAuth] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingAdd, setPendingAdd] = useState(null);
 
   // Load auth state and initial cart
   useEffect(() => {
@@ -54,6 +57,12 @@ export function CartProvider({ children }) {
   }, []);
 
   const add = useCallback((product, qty = 1, opt = null) => {
+    if (!auth) {
+      setPendingAdd({ product, qty, opt });
+      setShowLoginModal(true);
+      return;
+    }
+
     setItems((cur) => {
       const idx = cur.findIndex((i) => 
         i.product_id === product.id && 
@@ -141,6 +150,36 @@ export function CartProvider({ children }) {
         dbCart = merged;
       }
       
+      // Process pending add if exists
+      if (pendingAdd) {
+        const { product, qty, opt } = pendingAdd;
+        const price = opt ? (opt.sale_price && opt.sale_price < opt.price ? opt.sale_price : opt.price) 
+                          : (product.sale_price && product.sale_price < product.price ? product.sale_price : product.price);
+        
+        const idx = dbCart.findIndex(i => 
+          i.product_id === product.id && 
+          (opt ? (i.weight === opt.weight && i.unit === opt.unit) : true)
+        );
+
+        if (idx >= 0) {
+          dbCart[idx].quantity += qty;
+        } else {
+          dbCart.push({
+            product_id: product.id,
+            name: product.name,
+            image: opt && opt.image ? opt.image : product.image,
+            price: Number(price) || 0,
+            quantity: qty,
+            stock: opt ? opt.stock : product.stock,
+            weight: opt ? opt.weight : product.weight,
+            unit: opt ? opt.unit : product.unit,
+          });
+        }
+        await apiClient.post(`/cart/${authObj.userId}/sync`, dbCart);
+        setPendingAdd(null);
+        setOpen(true);
+      }
+      
       localStorage.removeItem(GUEST_KEY);
       localStorage.setItem(AUTH_KEY, JSON.stringify(authObj));
       setAuth(authObj);
@@ -148,7 +187,7 @@ export function CartProvider({ children }) {
     } catch (err) {
       console.error("Login sync failed", err);
     }
-  }, []);
+  }, [pendingAdd]);
 
   const logoutUser = useCallback(() => {
     localStorage.removeItem(AUTH_KEY);
@@ -160,11 +199,20 @@ export function CartProvider({ children }) {
   const count = useMemo(() => items.reduce((s, i) => s + i.quantity, 0), [items]);
 
   const value = useMemo(
-    () => ({ items, count, subtotal, open, setOpen, add, setQty, remove, clear, auth, loginUser, logoutUser }),
+    () => ({ items, count, subtotal, open, setOpen, add, setQty, remove, clear, auth, loginUser, logoutUser, setShowLoginModal }),
     [items, count, subtotal, open, add, setQty, remove, clear, auth, loginUser, logoutUser]
   );
 
-  return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;
+  return (
+    <CartCtx.Provider value={value}>
+      {children}
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={() => {}}
+      />
+    </CartCtx.Provider>
+  );
 }
 
 export function useCart() {
