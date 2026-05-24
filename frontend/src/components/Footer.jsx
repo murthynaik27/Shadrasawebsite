@@ -56,7 +56,7 @@ export default function Footer({ content = {} }) {
               <li><a href={`mailto:${EMAIL}`} className="hover:text-[#d4a017] break-all">{EMAIL}</a></li>
               <li>{ADDR}</li>
               <li className="pt-1 md:pt-3">
-                <Link to="/admin/login" data-testid="footer-admin-link" className="text-yellow-400 hover:text-[#d4a017] text-[10px] md:text-xs uppercase tracking-widest md:tracking-[0.2em] inline-block mt-2">Admin Portal</Link>
+                <Link to="/admin" data-testid="footer-admin-link" className="text-[#f4c430] font-medium hover:underline text-[11px] md:text-xs uppercase tracking-widest md:tracking-[0.2em] inline-block mt-2">ADMIN PORTAL</Link>
               </li>
             </ul>
           </div>
