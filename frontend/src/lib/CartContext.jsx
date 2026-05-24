@@ -60,7 +60,7 @@ export function CartProvider({ children }) {
     if (!auth) {
       setPendingAdd({ product, qty, opt });
       setShowLoginModal(true);
-      return;
+      return false;
     }
 
     setItems((cur) => {
@@ -96,6 +96,7 @@ export function CartProvider({ children }) {
       return next;
     });
     setOpen(true);
+    return true;
   }, [auth, syncCart]);
 
   const setQty = useCallback((product_id, qty, weight = null, unit = null) => {

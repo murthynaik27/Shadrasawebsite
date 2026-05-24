@@ -48,8 +48,10 @@ export default function Products({ products = [] }) {
       toast.error("Out of stock");
       return;
     }
-    add(p, 1, opt);
-    toast.success(`${p.name} added to cart`);
+    const added = add(p, 1, opt);
+    if (added) {
+      toast.success(`${p.name} added to cart`);
+    }
   };
 
   return (
