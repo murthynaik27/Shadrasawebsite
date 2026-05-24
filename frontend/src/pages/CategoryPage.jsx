@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { ShoppingCart, ShoppingBag, ArrowLeft, Star, StarHalf, Eye } from "lucide-react";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import Loader from "../components/Loader";
 import OptimizedImage from "../components/ui/OptimizedImage";
 import { apiClient } from "../lib/api";
@@ -110,7 +109,6 @@ export default function CategoryPage() {
           <h1 className="text-3xl text-[#0a331e] font-display mb-4">Category not found</h1>
           <Link to="/" className="text-[#0f4d2e] underline font-semibold">Return Home</Link>
         </main>
-        <Footer content={content} />
       </div>
     );
   }
@@ -282,7 +280,6 @@ export default function CategoryPage() {
           )}
         </div>
       </main>
-      <Footer content={content} />
       <EnquiryDialog open={open} onOpenChange={setOpen} product={active ? { id: active.id, title: active.name } : null} />
       <ProductReviewsModal open={reviewsOpen} onOpenChange={setReviewsOpen} product={active ? { id: active.id, name: active.name } : null} />
     </div>
