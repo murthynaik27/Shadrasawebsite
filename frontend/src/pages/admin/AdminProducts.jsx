@@ -60,6 +60,8 @@ export default function AdminProducts() {
           weight: Number(opt.weight) || 0,
           price: Number(opt.price) || 0,
           sale_price: opt.sale_price ? Number(opt.sale_price) : null,
+          retailerPrice: opt.retailerPrice ? Number(opt.retailerPrice) : null,
+          normalPrice: opt.normalPrice ? Number(opt.normalPrice) : null,
           stock: Number(opt.stock) || 0,
         }))
       };
@@ -212,7 +214,7 @@ export default function AdminProducts() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Weight Options *</Label>
-              <button type="button" onClick={() => setForm({ ...form, weight_options: [...(form.weight_options || []), { weight: "", unit: "g", price: 0, sale_price: "", stock: 0, image: "" }] })} className="text-xs bg-[#0f4d2e]/10 text-[#0f4d2e] px-3 py-1.5 rounded-full font-semibold hover:bg-[#0f4d2e]/20 transition-colors">
+              <button type="button" onClick={() => setForm({ ...form, weight_options: [...(form.weight_options || []), { weight: "", unit: "g", price: 0, sale_price: "", retailerPrice: "", normalPrice: "", stock: 0, image: "" }] })} className="text-xs bg-[#0f4d2e]/10 text-[#0f4d2e] px-3 py-1.5 rounded-full font-semibold hover:bg-[#0f4d2e]/20 transition-colors">
                 + Add Option
               </button>
             </div>
@@ -246,6 +248,14 @@ export default function AdminProducts() {
                       <label className="flex-1 min-w-[80px]">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Sale (₹)</span>
                         <TextInput type="number" min="0" value={opt.sale_price ?? ""} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].sale_price = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
+                      </label>
+                      <label className="flex-1 min-w-[80px]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Retailer (₹)</span>
+                        <TextInput type="number" min="0" value={opt.retailerPrice ?? ""} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].retailerPrice = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
+                      </label>
+                      <label className="flex-1 min-w-[80px]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Normal (₹)</span>
+                        <TextInput type="number" min="0" value={opt.normalPrice ?? ""} onChange={(e) => { const newOpts = [...form.weight_options]; newOpts[idx].normalPrice = e.target.value; setForm({ ...form, weight_options: newOpts }); }} />
                       </label>
                       <label className="w-24">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b3e1f] mb-1 block">Stock</span>

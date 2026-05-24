@@ -182,6 +182,8 @@ class WeightOptionIn(BaseModel):
     unit: str
     price: float
     sale_price: Optional[float] = None
+    retailerPrice: Optional[float] = None
+    normalPrice: Optional[float] = None
     stock: int = 0
     image: Optional[str] = None
     blur_image: Optional[str] = None
@@ -596,6 +598,15 @@ async def site_products(category_id: Optional[str] = None, featured: Optional[bo
     
     skip = (page - 1) * limit
     items = list(db.products.find(q, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).skip(skip).limit(limit))
+    return items
+
+
+@api_router.get("/products")
+async def get_products_lite():
+    items = list(db.products.find(
+        {"is_active": True},
+        {"_id": 0, "id": 1, "name": 1, "weight_options": 1}
+    ).sort("name", 1))
     return items
 
 

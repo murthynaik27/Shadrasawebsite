@@ -15,7 +15,7 @@ export default function AdminInvoices() {
     try {
       const [invRes, prodRes] = await Promise.all([
         apiClient.get("/admin/invoices", { headers: authHeaders() }),
-        apiClient.get("/admin/products", { headers: authHeaders() })
+        apiClient.get("/products", { headers: authHeaders() })
       ]);
       setInvoices(invRes.data || []);
       setProducts(prodRes.data || []);
@@ -156,9 +156,14 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
       const p = products.find(prod => prod.id === val);
       if (p) {
         it.name = p.name;
-        it.price = p.sale_price || p.price;
-        it.weight = p.weight || "";
-        it.unit = p.unit || "g";
+        it.weight = "";
+        it.unit = "g";
+        it.price = 0;
+      } else {
+        it.name = "";
+        it.weight = "";
+        it.unit = "g";
+        it.price = 0;
       }
     }
     
@@ -179,6 +184,14 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
       toast.error("Add at least one item to the bill");
       return;
     }
+    
+    for (const item of items) {
+      if (!item.product_id && !item.name) return toast.error("Select product");
+      if (item.product_id && !item.weight) return toast.error("Select weight for " + item.name);
+      if (item.quantity <= 0) return toast.error("Invalid quantity for " + item.name);
+      if (!item.price && item.price !== 0) return toast.error("Retailer price missing for " + item.name);
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -243,13 +256,48 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
             </div>
             {items.map((it, i) => (
               <div key={i} className="flex flex-wrap items-end gap-2 bg-[#fdfbf7] p-3 rounded-lg border border-[#6b3e1f]/10">
-                <div className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-[150px]">
                   <label className="text-[10px] uppercase text-[#6b3e1f]">Product</label>
                   <select value={it.product_id} onChange={e => updateItem(i, "product_id", e.target.value)} className="w-full rounded bg-white border border-[#6b3e1f]/20 p-1.5 text-xs">
                     <option value="">-- Custom Item --</option>
-                    {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.weight}{p.unit})</option>)}
+                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
+                {it.product_id && (
+                  <div className="w-24">
+                    <label className="text-[10px] uppercase text-[#6b3e1f]">Weight</label>
+                    <select 
+                      value={it.weight ? `${it.weight}|${it.unit}` : ""} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (!val) {
+                          updateItem(i, "weight", "");
+                          updateItem(i, "price", 0);
+                        } else {
+                          const [w, u] = val.split("|");
+                          const p = products.find(prod => prod.id === it.product_id);
+                          const opt = p?.weight_options?.find(o => String(o.weight) === w && o.unit === u);
+                          if (opt) {
+                             const newItems = [...items];
+                             newItems[i].weight = opt.weight;
+                             newItems[i].unit = opt.unit;
+                             newItems[i].price = opt.retailerPrice || 0;
+                             newItems[i].line_total = (newItems[i].quantity || 0) * newItems[i].price;
+                             setItems(newItems);
+                          }
+                        }
+                      }}
+                      className="w-full rounded bg-white border border-[#6b3e1f]/20 p-1.5 text-xs"
+                    >
+                      <option value="">-- Weight --</option>
+                      {products.find(p => p.id === it.product_id)?.weight_options?.map(o => (
+                        <option key={`${o.weight}|${o.unit}`} value={`${o.weight}|${o.unit}`}>
+                          {o.weight}{o.unit}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 {it.product_id === "" && (
                   <div className="w-32">
                      <label className="text-[10px] uppercase text-[#6b3e1f]">Name</label>
@@ -260,9 +308,21 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
                   <label className="text-[10px] uppercase text-[#6b3e1f]">Qty</label>
                   <input type="number" min="1" value={it.quantity} onChange={e => updateItem(i, "quantity", parseInt(e.target.value)||0)} className="w-full rounded bg-white border border-[#6b3e1f]/20 p-1.5 text-xs" />
                 </div>
-                <div className="w-20">
-                  <label className="text-[10px] uppercase text-[#6b3e1f]">Price</label>
-                  <input type="number" step="0.01" value={it.price} onChange={e => updateItem(i, "price", parseFloat(e.target.value)||0)} className="w-full rounded bg-white border border-[#6b3e1f]/20 p-1.5 text-xs" />
+                <div className="w-24">
+                  <label className="text-[10px] uppercase text-[#6b3e1f] flex items-center justify-between">
+                     <span>Price</span>
+                     {it.product_id && it.weight && (
+                        <span className="text-[8px] bg-green-100 text-green-700 px-1 py-0.5 rounded leading-none ml-1">Retailer Price</span>
+                     )}
+                  </label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={it.price} 
+                    disabled={!!it.product_id} 
+                    onChange={e => updateItem(i, "price", parseFloat(e.target.value)||0)} 
+                    className={`w-full rounded border border-[#6b3e1f]/20 p-1.5 text-xs ${it.product_id ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
+                  />
                 </div>
                 <div className="w-20">
                   <label className="text-[10px] uppercase text-[#6b3e1f]">Total</label>
