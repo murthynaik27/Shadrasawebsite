@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Award, ArrowRight, ShoppingBag, ShoppingCart, Eye } from "lucide-react";
+import { Award, ArrowRight, ShoppingBag, ShoppingCart, Eye, MessageSquare } from "lucide-react";
 import EnquiryDialog from "./EnquiryDialog";
+import ProductRating from "./ProductRating";
+import ProductReviewsModal from "./ProductReviewsModal";
 import { formatPrice } from "../lib/admin";
 import { useCart } from "../lib/CartContext";
 import OptimizedImage from "./ui/OptimizedImage";
 
 export default function Products({ products = [] }) {
   const [open, setOpen] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
   const [active, setActive] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -24,6 +27,11 @@ export default function Products({ products = [] }) {
   const enquire = (p) => {
     setActive(p);
     setOpen(true);
+  };
+
+  const openReviews = (p) => {
+    setActive(p);
+    setReviewsOpen(true);
   };
 
   const handleProductClick = (p) => {
@@ -140,10 +148,15 @@ export default function Products({ products = [] }) {
                   )}
                   <h3 className="font-display text-sm md:text-2xl lg:text-3xl font-semibold text-[#0a331e] mb-2 md:mb-3 line-clamp-2 leading-snug">{p.name}</h3>
                   {p.category_name && (
-                    <span className="inline-block self-start text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-[#0f4d2e] bg-[#0f4d2e]/8 px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full mb-2 md:mb-4 font-semibold">
+                    <span className="inline-block self-start text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-[#0f4d2e] bg-[#0f4d2e]/8 px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full mb-2 font-semibold">
                       {p.category_name}
                     </span>
                   )}
+                  
+                  <div className="mb-2 md:mb-4">
+                    <ProductRating productId={p.id} onClick={() => openReviews(p)} />
+                  </div>
+
                   <p className="text-[#4a453f] leading-relaxed mb-3 md:mb-5 flex-1 hidden sm:block">{p.description}</p>
                   
                   {(() => {
@@ -226,6 +239,7 @@ export default function Products({ products = [] }) {
       </div>
 
       <EnquiryDialog open={open} onOpenChange={setOpen} product={active ? { id: active.id, title: active.name } : null} />
+      <ProductReviewsModal open={reviewsOpen} onOpenChange={setReviewsOpen} product={active ? { id: active.id, name: active.name } : null} />
     </section>
   );
 }

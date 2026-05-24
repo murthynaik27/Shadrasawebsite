@@ -12,6 +12,8 @@ import { useCart } from "../lib/CartContext";
 import { formatPrice } from "../lib/admin";
 import { useSiteData } from "../lib/siteData";
 import EnquiryDialog from "../components/EnquiryDialog";
+import ProductRating from "../components/ProductRating";
+import ProductReviewsModal from "../components/ProductReviewsModal";
 
 export default function CategoryPage() {
   const { slug } = useParams();
@@ -20,6 +22,7 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [slowLoading, setSlowLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
   const [active, setActive] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -74,6 +77,11 @@ export default function CategoryPage() {
     setOpen(true);
   };
 
+  const openReviews = (p) => {
+    setActive(p);
+    setReviewsOpen(true);
+  };
+
   const handleProductClick = (p) => {
     if (loadingProduct) return;
     setLoadingProduct(p.id);
@@ -92,12 +100,6 @@ export default function CategoryPage() {
     }
     add(p, 1, opt);
     toast.success(`${p.name} added to cart`);
-  };
-
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }).map((_, i) => (
-      <Star key={i} size={10} className={i < Math.floor(rating) ? "fill-[#d4a017] text-[#d4a017]" : "fill-gray-200 text-gray-200"} />
-    ));
   };
 
   if (!siteLoading && !category) {
@@ -152,10 +154,6 @@ export default function CategoryPage() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 w-full">
               {products.map((p, i) => {
-                // Mock rating for design completion as rating is not in Product model
-                const rating = 4 + (i % 2 === 0 ? 0.5 : 0);
-                const reviewsCount = 15 + (i * 12);
-                
                 return (
                   <motion.div
                     key={p.id}
@@ -217,12 +215,8 @@ export default function CategoryPage() {
                         )}
                         <h3 className="font-display text-sm md:text-xl lg:text-2xl font-semibold text-[#0a331e] mb-1.5 md:mb-2 line-clamp-2 leading-snug">{p.name}</h3>
                         
-                        <div className="flex items-center gap-1 md:gap-1.5 mb-3 md:mb-5">
-                          <div className="flex items-center scale-75 md:scale-100 origin-left">
-                            {renderStars(rating)}
-                          </div>
-                          <span className="text-[10px] md:text-xs text-[#6b3e1f] font-medium hidden sm:inline-block">({reviewsCount} reviews)</span>
-                          <span className="text-[10px] md:text-xs text-[#6b3e1f] font-medium sm:hidden">({reviewsCount})</span>
+                        <div className="mb-3 md:mb-5">
+                          <ProductRating productId={p.id} onClick={() => openReviews(p)} />
                         </div>
 
                         {(() => {
@@ -290,6 +284,7 @@ export default function CategoryPage() {
       </main>
       <Footer content={content} />
       <EnquiryDialog open={open} onOpenChange={setOpen} product={active ? { id: active.id, title: active.name } : null} />
+      <ProductReviewsModal open={reviewsOpen} onOpenChange={setReviewsOpen} product={active ? { id: active.id, name: active.name } : null} />
     </div>
   );
 }

@@ -242,6 +242,13 @@ class ReviewIn(BaseModel):
     is_verified_purchase: bool = False
 
 
+class ProductReviewIn(BaseModel):
+    product_id: str = Field(..., max_length=120)
+    name: str = Field(..., max_length=100)
+    rating: int = Field(..., ge=1, le=5)
+    comment: str = Field(..., max_length=1000)
+
+
 class StatusUpdate(BaseModel):
     status: str = Field(..., max_length=40)
 
@@ -706,6 +713,47 @@ async def submit_review(data: ReviewIn):
     db.reviews.insert_one(doc.copy())
     doc.pop("_id", None)
     return doc
+
+
+@api_router.post("/product-reviews", status_code=201)
+async def submit_product_review(data: ProductReviewIn):
+    doc = {
+        "id": str(uuid.uuid4()),
+        **data.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    db.product_reviews.insert_one(doc.copy())
+    doc.pop("_id", None)
+    return doc
+
+
+@api_router.get("/product-reviews/{product_id}")
+async def get_product_reviews(product_id: str):
+    items = list(db.product_reviews.find(
+        {"product_id": product_id}, 
+        {"_id": 0}
+    ).sort("created_at", -1).limit(100))
+    return items
+
+
+@api_router.get("/product-reviews/summary/{product_id}")
+async def get_product_reviews_summary(product_id: str):
+    pipeline = [
+        {"$match": {"product_id": product_id}},
+        {"$group": {
+            "_id": None,
+            "average_rating": {"$avg": "$rating"},
+            "total_reviews": {"$sum": 1}
+        }}
+    ]
+    result = list(db.product_reviews.aggregate(pipeline))
+    if not result:
+        return {"average_rating": 0.0, "total_reviews": 0}
+    
+    return {
+        "average_rating": round(result[0]["average_rating"], 1),
+        "total_reviews": result[0]["total_reviews"]
+    }
 
 
 # -------- Admin CMS Routes --------
