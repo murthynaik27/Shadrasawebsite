@@ -335,8 +335,14 @@ class ContentIn(BaseModel):
     contact_email: Optional[str] = None
     contact_address: Optional[str] = None
     whatsapp_number: Optional[str] = None
+    business_name: Optional[str] = None
+    upi_id: Optional[str] = None
     # Footer
     footer_tagline: Optional[str] = None
+    social_instagram: Optional[str] = None
+    social_facebook: Optional[str] = None
+    social_youtube: Optional[str] = None
+    social_twitter: Optional[str] = None
 
 
 import base64
