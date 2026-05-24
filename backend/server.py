@@ -183,6 +183,7 @@ class WeightOptionIn(BaseModel):
     price: float
     sale_price: Optional[float] = None
     retailerPrice: Optional[float] = None
+    wholesalePrice: Optional[float] = None
     normalPrice: Optional[float] = None
     stock: int = 0
     image: Optional[str] = None
@@ -276,6 +277,7 @@ class InvoiceItemIn(BaseModel):
     quantity: int = Field(..., ge=1)
     weight: Optional[float] = None
     unit: Optional[str] = None
+    price_type: Optional[str] = None
     price: float = Field(..., ge=0)
     line_total: float = Field(..., ge=0)
 

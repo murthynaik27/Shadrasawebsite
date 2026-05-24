@@ -144,7 +144,7 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
   const [items, setItems] = useState([]);
   const [saving, setSaving] = useState(false);
 
-  const addItem = () => setItems([...items, { product_id: "", name: "", quantity: 1, weight: "", unit: "g", price: 0, line_total: 0 }]);
+  const addItem = () => setItems([...items, { product_id: "", name: "", quantity: 1, weight: "", unit: "g", price_type: "retailer", price: 0, line_total: 0 }]);
   const removeItem = (idx) => setItems(items.filter((_, i) => i !== idx));
 
   const updateItem = (idx, field, val) => {
@@ -156,9 +156,16 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
       const p = products.find(prod => prod.id === val);
       if (p) {
         it.name = p.name;
-        it.weight = "";
-        it.unit = "g";
-        it.price = 0;
+        if (p.weight_options && p.weight_options.length > 0) {
+           const opt = p.weight_options[0];
+           it.weight = opt.weight;
+           it.unit = opt.unit;
+           it.price = (it.price_type === "wholesale" && opt.wholesalePrice != null) ? opt.wholesalePrice : (opt.retailerPrice || 0);
+        } else {
+           it.weight = "";
+           it.unit = "g";
+           it.price = 0;
+        }
       } else {
         it.name = "";
         it.weight = "";
@@ -188,8 +195,9 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
     for (const item of items) {
       if (!item.product_id && !item.name) return toast.error("Select product");
       if (item.product_id && !item.weight) return toast.error("Select weight for " + item.name);
+      if (!item.price_type) return toast.error("Select type for " + item.name);
       if (item.quantity <= 0) return toast.error("Invalid quantity for " + item.name);
-      if (!item.price && item.price !== 0) return toast.error("Retailer price missing for " + item.name);
+      if (!item.price && item.price !== 0) return toast.error("Price missing for " + item.name);
     }
 
     setSaving(true);
@@ -281,7 +289,7 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
                              const newItems = [...items];
                              newItems[i].weight = opt.weight;
                              newItems[i].unit = opt.unit;
-                             newItems[i].price = opt.retailerPrice || 0;
+                             newItems[i].price = (newItems[i].price_type === "wholesale" && opt.wholesalePrice != null) ? opt.wholesalePrice : (opt.retailerPrice || 0);
                              newItems[i].line_total = (newItems[i].quantity || 0) * newItems[i].price;
                              setItems(newItems);
                           }
@@ -298,6 +306,31 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
                     </select>
                   </div>
                 )}
+                {it.product_id && (
+                  <div className="w-24">
+                    <label className="text-[10px] uppercase text-[#6b3e1f]">Type</label>
+                    <select 
+                      value={it.price_type || "retailer"} 
+                      onChange={e => {
+                        const newType = e.target.value;
+                        const newItems = [...items];
+                        newItems[i].price_type = newType;
+                        
+                        const p = products.find(prod => prod.id === it.product_id);
+                        const opt = p?.weight_options?.find(o => String(o.weight) === String(it.weight) && o.unit === it.unit);
+                        if (opt) {
+                           newItems[i].price = (newType === "wholesale" && opt.wholesalePrice != null) ? opt.wholesalePrice : (opt.retailerPrice || 0);
+                        }
+                        newItems[i].line_total = (newItems[i].quantity || 0) * newItems[i].price;
+                        setItems(newItems);
+                      }}
+                      className="w-full rounded bg-white border border-[#6b3e1f]/20 p-1.5 text-xs"
+                    >
+                      <option value="retailer">Retailer</option>
+                      <option value="wholesale">Wholesale</option>
+                    </select>
+                  </div>
+                )}
                 {it.product_id === "" && (
                   <div className="w-32">
                      <label className="text-[10px] uppercase text-[#6b3e1f]">Name</label>
@@ -309,11 +342,12 @@ function InvoiceFormDrawer({ onClose, onSaved, products }) {
                   <input type="number" min="1" value={it.quantity} onChange={e => updateItem(i, "quantity", parseInt(e.target.value)||0)} className="w-full rounded bg-white border border-[#6b3e1f]/20 p-1.5 text-xs" />
                 </div>
                 <div className="w-24">
-                  <label className="text-[10px] uppercase text-[#6b3e1f] flex items-center justify-between">
-                     <span>Price</span>
-                     {it.product_id && it.weight && (
-                        <span className="text-[8px] bg-green-100 text-green-700 px-1 py-0.5 rounded leading-none ml-1">Retailer Price</span>
-                     )}
+                  <label className="text-[10px] uppercase text-[#6b3e1f] flex flex-col gap-0.5 min-h-[28px] justify-end pb-1">
+                     <span className="flex items-center gap-1">Price {it.product_id && it.weight && (
+                        <span className={`text-[8px] px-1 py-0.5 rounded leading-none w-max ${it.price_type === 'wholesale' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                          {it.price_type === 'wholesale' ? 'Wholesale Price' : 'Retailer Price'}
+                        </span>
+                     )}</span>
                   </label>
                   <input 
                     type="number" 
