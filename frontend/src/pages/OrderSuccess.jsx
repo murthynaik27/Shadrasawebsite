@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CheckCircle2, ShoppingBag, MessageCircle, Phone } from "lucide-react";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import { apiClient } from "../lib/api";
 import { formatPrice } from "../lib/admin";
 import { useSiteData, buildWhatsappFromNumber } from "../lib/siteData";
@@ -88,7 +87,6 @@ export default function OrderSuccess() {
           </div>
         </div>
       </main>
-      <Footer content={content} />
     </div>
   );
 }
