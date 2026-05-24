@@ -427,6 +427,73 @@ async def me(user: dict = Depends(get_current_user)):
     return user
 
 
+# ---- Customers & Cart ----
+
+class CustomerRegister(BaseModel):
+    name: str
+    phone: str
+    password: str
+
+class CustomerLogin(BaseModel):
+    phone: str
+    password: str
+
+@api_router.post("/customers/register")
+async def register(data: CustomerRegister):
+    existing = db.customers.find_one({"phone": data.phone})
+    if existing:
+        raise HTTPException(400, "Phone already registered")
+    
+    hashed = bcrypt.hashpw(data.password.encode(), bcrypt.gensalt())
+    
+    user = {
+        "id": str(uuid.uuid4()),
+        "name": data.name,
+        "phone": data.phone,
+        "password_hash": hashed.decode()
+    }
+    
+    db.customers.insert_one(user)
+    return {"userId": user["id"], "name": user["name"], "phone": user["phone"]}
+
+@api_router.post("/customers/login")
+async def login(data: CustomerLogin):
+    user = db.customers.find_one({"phone": data.phone})
+    if not user:
+        raise HTTPException(400, "User not found")
+        
+    if not bcrypt.checkpw(data.password.encode(), user["password_hash"].encode()):
+        raise HTTPException(400, "Wrong password")
+        
+    return {"userId": user["id"], "name": user["name"], "phone": user["phone"]}
+
+@api_router.get("/cart/{user_id}")
+async def get_cart(user_id: str):
+    cart = db.carts.find_one({"user_id": user_id})
+    return cart["items"] if cart else []
+
+@api_router.post("/cart/{user_id}/sync")
+async def sync_cart(user_id: str, items: list):
+    existing = db.carts.find_one({"user_id": user_id})
+    
+    if existing:
+        merged = existing["items"]
+        for new_item in items:
+            found = False
+            for old in merged:
+                if old["product_id"] == new_item["product_id"] and old.get("weight") == new_item.get("weight") and old.get("unit") == new_item.get("unit"):
+                    old["quantity"] = old.get("quantity", 0) + new_item.get("quantity", 1)
+                    found = True
+            if not found:
+                merged.append(new_item)
+                
+        db.carts.update_one({"user_id": user_id}, {"$set": {"items": merged}})
+    else:
+        db.carts.insert_one({"user_id": user_id, "items": items})
+        
+    return {"message": "Cart synced"}
+
+
 @api_router.post("/contact", status_code=201)
 async def create_contact(data: ContactCreate):
     doc = {

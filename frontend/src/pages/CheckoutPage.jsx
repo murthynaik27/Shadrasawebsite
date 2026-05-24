@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ChevronLeft, ShoppingBag, Truck, MessageCircle, Wallet, Banknote } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import LoginModal from "../components/LoginModal";
 import { useCart } from "../lib/CartContext";
 import { apiClient, formatApiError, getImageUrl } from "../lib/api";
 import { formatPrice } from "../lib/admin";
@@ -17,10 +18,11 @@ const PAYMENT_METHODS = [
 ];
 
 export default function CheckoutPage() {
-  const { items, subtotal, clear } = useCart();
+  const { items, subtotal, clear, auth } = useCart();
   const { content } = useSiteData();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [form, setForm] = useState({
     customer_name: "",
     customer_email: "",
@@ -44,11 +46,25 @@ export default function CheckoutPage() {
     }
   }, [items.length, navigate]);
 
+  useEffect(() => {
+    if (auth) {
+      setForm((f) => ({
+        ...f,
+        customer_name: f.customer_name || auth.name || "",
+        customer_phone: f.customer_phone || auth.phone || "",
+      }));
+    }
+  }, [auth]);
+
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async (e) => {
     e.preventDefault();
     if (items.length === 0) return;
+    if (!auth) {
+      setShowLoginModal(true);
+      return;
+    }
     setSubmitting(true);
     try {
       const payload = {
@@ -210,6 +226,13 @@ export default function CheckoutPage() {
         </div>
       </main>
       <Footer content={content} />
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={() => {
+          // Keep modal closed, auth state will update naturally and they can click "Place Order" again
+        }} 
+      />
     </div>
   );
 }
