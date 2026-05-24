@@ -142,10 +142,10 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3">
               {/* Progress Indicator */}
-              <div className="relative flex items-center justify-between mb-8 px-4 sm:px-10">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-[#6b3e1f]/15 -z-10 px-10 box-border bg-clip-content"></div>
+              <div className="relative flex items-center justify-between mb-8 px-2 sm:px-10 max-w-full overflow-hidden">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-[#6b3e1f]/15 -z-10 px-6 sm:px-10 box-border bg-clip-content"></div>
                 <div 
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] bg-[#0f4d2e] -z-10 transition-all duration-500 ease-out px-10 box-border bg-clip-content" 
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] bg-[#0f4d2e] -z-10 transition-all duration-500 ease-out px-6 sm:px-10 box-border bg-clip-content" 
                   style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}
                 ></div>
                 
@@ -160,9 +160,9 @@ export default function CheckoutPage() {
                         isPast ? 'bg-[#0f4d2e] text-white' : 
                         'bg-white text-[#6b3e1f] border border-[#6b3e1f]/20'
                       }`}>
-                        {isPast ? <Check size={18} /> : num}
+                        {isPast ? <Check size={16} /> : num}
                       </div>
-                      <span className={`text-xs mt-2 font-semibold ${isActive || isPast ? 'text-[#0a331e]' : 'text-[#6b3e1f]/70'}`}>{label}</span>
+                      <span className={`text-[10px] sm:text-xs mt-2 font-semibold ${isActive || isPast ? 'text-[#0a331e]' : 'text-[#6b3e1f]/70'}`}>{label}</span>
                     </div>
                   );
                 })}
@@ -185,8 +185,8 @@ export default function CheckoutPage() {
                         <I type="email" data-testid="co-email" value={form.customer_email} onChange={(e) => update("customer_email", e.target.value)} />
                       </F>
                     </div>
-                    <div className="mt-8">
-                      <button type="button" onClick={() => nextStep(2)} className="w-full bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-xl font-semibold py-4 shadow-md transition-all btn-glow">
+                    <div className="sticky bottom-0 bg-white p-4 -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 mt-6 border-t border-[#6b3e1f]/10 rounded-b-[2rem] sm:border-none sm:p-0 sm:mt-8 z-30">
+                      <button type="button" onClick={() => nextStep(2)} className="w-full bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-xl font-semibold py-3.5 sm:py-4 shadow-md transition-all btn-glow text-sm sm:text-base">
                         Continue to Delivery
                       </button>
                     </div>
@@ -203,7 +203,7 @@ export default function CheckoutPage() {
                       <F label="Address Line 2 (optional)">
                         <I data-testid="co-addr2" value={form.address_line2} onChange={(e) => update("address_line2", e.target.value)} />
                       </F>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
                         <F label="City" req>
                           <I required data-testid="co-city" value={form.city} onChange={(e) => update("city", e.target.value)} />
                         </F>
@@ -218,12 +218,12 @@ export default function CheckoutPage() {
                         <textarea rows={2} data-testid="co-notes" value={form.notes} onChange={(e) => update("notes", e.target.value)} className="cf-input2" />
                       </F>
                     </div>
-                    <div className="mt-8 flex gap-4">
-                      <button type="button" onClick={() => setStep(1)} className="w-1/3 border border-[#0f4d2e]/20 text-[#0f4d2e] hover:bg-[#0f4d2e]/5 rounded-xl font-semibold py-4 transition-all">
+                    <div className="sticky bottom-0 bg-white p-4 -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 mt-6 border-t border-[#6b3e1f]/10 rounded-b-[2rem] sm:border-none sm:p-0 sm:mt-8 z-30 flex gap-3 sm:gap-4">
+                      <button type="button" onClick={() => setStep(1)} className="w-1/3 border border-[#0f4d2e]/20 text-[#0f4d2e] hover:bg-[#0f4d2e]/5 rounded-xl font-semibold py-3.5 sm:py-4 transition-all text-sm sm:text-base">
                         Back
                       </button>
-                      <button type="button" onClick={() => nextStep(3)} className="w-2/3 bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-xl font-semibold py-4 shadow-md transition-all btn-glow">
-                        Continue to Payment
+                      <button type="button" onClick={() => nextStep(3)} className="w-2/3 bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-xl font-semibold py-3.5 sm:py-4 shadow-md transition-all btn-glow text-sm sm:text-base">
+                        Continue
                       </button>
                     </div>
                   </Section>
@@ -252,11 +252,11 @@ export default function CheckoutPage() {
                         </label>
                       ))}
                     </div>
-                    <div className="mt-8 flex gap-4">
-                      <button type="button" onClick={() => setStep(2)} disabled={submitting} className="w-1/3 border border-[#0f4d2e]/20 text-[#0f4d2e] hover:bg-[#0f4d2e]/5 rounded-xl font-semibold py-4 transition-all disabled:opacity-50">
+                    <div className="sticky bottom-0 bg-white p-4 -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 mt-6 border-t border-[#6b3e1f]/10 rounded-b-[2rem] sm:border-none sm:p-0 sm:mt-8 z-30 flex gap-3 sm:gap-4">
+                      <button type="button" onClick={() => setStep(2)} disabled={submitting} className="w-1/3 border border-[#0f4d2e]/20 text-[#0f4d2e] hover:bg-[#0f4d2e]/5 rounded-xl font-semibold py-3.5 sm:py-4 transition-all disabled:opacity-50 text-sm sm:text-base">
                         Back
                       </button>
-                      <button type="submit" disabled={submitting} data-testid="checkout-submit" className="w-2/3 bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-xl font-semibold py-4 shadow-md transition-all btn-glow disabled:opacity-70 flex items-center justify-center gap-2">
+                      <button type="submit" disabled={submitting} data-testid="checkout-submit" className="w-2/3 bg-[#0f4d2e] hover:bg-[#0a331e] text-white rounded-xl font-semibold py-3.5 sm:py-4 shadow-md transition-all btn-glow disabled:opacity-70 flex items-center justify-center gap-2 text-sm sm:text-base">
                         {submitting ? "Processing..." : `Place Order`}
                       </button>
                     </div>
@@ -286,9 +286,9 @@ export default function CheckoutPage() {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <div className="rounded-[2rem] bg-white border border-[#6b3e1f]/10 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-      <h2 className="font-display text-xl font-semibold text-[#0a331e] mb-6 flex items-center gap-2.5">
-        <div className="h-8 w-8 rounded-full bg-[#0f4d2e]/10 flex items-center justify-center text-[#0f4d2e]">
+    <div className="rounded-[2rem] bg-white border border-[#6b3e1f]/10 p-5 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-full overflow-hidden">
+      <h2 className="font-display text-lg sm:text-xl font-semibold text-[#0a331e] mb-5 sm:mb-6 flex items-center gap-2.5 break-words">
+        <div className="h-8 w-8 rounded-full bg-[#0f4d2e]/10 flex items-center justify-center text-[#0f4d2e] flex-shrink-0">
           <Icon size={16} />
         </div>
         {title}
